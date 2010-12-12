@@ -1,0 +1,33 @@
+MH string tables unpacker/rebuilder/encrypter/decrypter.
+
+encoder/decoder number meaning to use in binary files:
+
+1 -> 0017, 2813-2818
+4 -> 3973-3987
+
+2 -> 5311-5323
+3 -> 5370-5373
+
+To unpack and decrypt all the files from a container, e.g.:
+java -jar mhtrans.jar --dec-all /home/user/data.bin output_dir
+
+To extract all the string tables from a binary file, e.g.:
+java -jar mhtrans.jar --extract 0017.bin 1
+
+To rebuild a new binary file using the string tables, e.g.:
+java -jar mhtrans.jar --rebuild /home/user/0017 1
+
+To encrypt a binary file, e.g.:
+java -jar mhtrans.jar --encrypt 0017.bin
+
+To rebuild and encrypt, e.g.:
+java -jar mhtrans.jar --reb-enc /home/user/0017 1
+
+To decrypt a binary file, e.g.:
+java -jar mhtrans.jar --decrypt 0017.bin.enc
+
+To decrypt and extract, e.g.:
+java -jar mhtrans.jar --dec-ext 0017.bin.enc 1
+
+To only generate a index.bin (necessary to decrypt/encrypt), e.g.:
+java -jar mhtrans.jar --gen-index /home/user/data.bin
