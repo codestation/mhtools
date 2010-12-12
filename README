@@ -2,9 +2,13 @@ MH string tables unpacker/rebuilder/encrypter/decrypter.
 
 encoder/decoder number meaning to use in binary files:
 
+(Newer data.bin)
 1 -> 0017, 2813-2818
+3 -> 4202-4204
 4 -> 3973-3987
 
+(Older data.bin)
+1 -> 0016, 4757-4759
 2 -> 5311-5323
 3 -> 5370-5373
 
