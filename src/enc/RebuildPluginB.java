@@ -40,137 +40,146 @@ import base.Encoder;
  */
 public class RebuildPluginB extends Encoder {
 
-	private int encoder = 0;
-	public RebuildPluginB(int type) {
-		encoder = type;
-	}
+    private int encoder = 0;
 
-	@Override
-	public void compile(String filepath) {
-		try {
-			BufferedReader files = new BufferedReader(new FileReader(filepath + "/filelist.txt"));
-			String file = files.readLine();
-			// retrieve the filename and size
-			String filename = file.split(" ")[0];
-			// long size = Integer.parseInt(file.split(" ")[1]);
-			// now make a list with the string tables files
-			Vector<String> filenames = new Vector<String>();
-			while ((file = files.readLine()) != null) {
-				filenames.add(file);
-			}
-			files.close();
-			copyfile(filepath + "/" + filename, filename + ".out");
-			RandomAccessFile out = new RandomAccessFile(filename + ".out", "rw");
-			Vector<Integer> table_offset = new Vector<Integer>();
-			int pointer;
-			while (true) {
-				pointer = readInt(out);
-				if (pointer == 0) {
-					break;
-				}
-				table_offset.add(pointer);
-			}
-			for (int i = 0; i < table_offset.size(); i++) {
-				patchStringTable(filepath, filenames.get(i), out, table_offset.get(i));
-			}
-			out.close();
-			System.out.println("Finished!");
-		} catch (FileNotFoundException e) {
-			System.out.println(e.toString());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+    public RebuildPluginB(int type) {
+        encoder = type;
+    }
 
-	private void patchStringTable(String directory, String in, RandomAccessFile out, int starting_offset) throws FileNotFoundException, IOException {
-		System.out.println("Reading " + directory + "/" + in);
-		RandomAccessFile file = new RandomAccessFile(directory + "/" + in, "r");
-		checkUnicodeBOM(file); // thanks notepad :/ (die notepad, die)
-		Vector<String> stringTable = new Vector<String>();
-		try {
-			while (true) {
-				// read all strings of file
-				String str = readString(file);
-				if (str == null) {
-					break;
-				}
-				// remove the labels and put the original data
-				str = str.replaceAll("<NEWLINE>", "\n");
-				str = str.replaceAll("<EMPTY STRING>", "\0");
-				stringTable.add(str);
-			}
-		} catch (EOFException e) {
-		}
-		file.close();
-		out.seek(starting_offset);
-		out.skipBytes(20 + encoder);
-		int offset_table_pointer = readInt(out);
-		int string_start = (int) out.getFilePointer() + 28;
-		out.seek(offset_table_pointer);
-		int string_table_pointers = readInt(out);
-		int diff = string_table_pointers - string_start	- calculateTotalSize(stringTable);
-		if (diff < 0) {
-			System.err.println(in + " is too big, please remove at least " + -diff + " bytes. Skipped");
-			return;
-		}
-		out.seek(string_table_pointers);
-		int starting_string = readInt(out);
-		out.seek(starting_string);
-		long orig_table_pointer = string_table_pointers;
-		for (String str : stringTable) {
-			out.write(str.getBytes("UTF-8"));
-			out.writeByte(0);
-			out.writeByte(0);
-			while (out.getFilePointer() % 4 != 0) {
-				out.writeByte(0);
-			}
-			int tmp = (int) out.getFilePointer();
-			out.seek(string_table_pointers);
-			writeInt(out, starting_string);
-			string_table_pointers += 4;
-			starting_string = tmp;
-			out.seek(tmp);
-		}
-		long current_offset = out.getFilePointer();
-		while (current_offset < orig_table_pointer) {
-			out.writeByte(0);
-			current_offset++;
-		}
-	}
+    @Override
+    public void compile(String filepath) {
+        try {
+            BufferedReader files = new BufferedReader(new FileReader(filepath
+                    + "/filelist.txt"));
+            String file = files.readLine();
+            // retrieve the filename and size
+            String filename = file.split(" ")[0];
+            // long size = Integer.parseInt(file.split(" ")[1]);
+            // now make a list with the string tables files
+            Vector<String> filenames = new Vector<String>();
+            while ((file = files.readLine()) != null) {
+                filenames.add(file);
+            }
+            files.close();
+            copyfile(filepath + "/" + filename, filename + ".out");
+            RandomAccessFile out = new RandomAccessFile(filename + ".out", "rw");
+            Vector<Integer> table_offset = new Vector<Integer>();
+            int pointer;
+            while (true) {
+                pointer = readInt(out);
+                if (pointer == 0) {
+                    break;
+                }
+                table_offset.add(pointer);
+            }
+            for (int i = 0; i < table_offset.size(); i++) {
+                patchStringTable(filepath, filenames.get(i), out,
+                        table_offset.get(i));
+            }
+            out.close();
+            System.out.println("Finished!");
+        } catch (FileNotFoundException e) {
+            System.out.println(e.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-	private int calculateTotalSize(Vector<String> st) throws UnsupportedEncodingException {
-		int total = 0;
-		for (String str : st) {
-			int len = str.getBytes("UTF-8").length;
+    private void patchStringTable(String directory, String in,
+            RandomAccessFile out, int starting_offset)
+            throws FileNotFoundException, IOException {
+        System.out.println("Reading " + directory + "/" + in);
+        RandomAccessFile file = new RandomAccessFile(directory + "/" + in, "r");
+        checkUnicodeBOM(file); // thanks notepad :/ (die notepad, die)
+        Vector<String> stringTable = new Vector<String>();
+        try {
+            while (true) {
+                // read all strings of file
+                String str = readString(file);
+                if (str == null) {
+                    break;
+                }
+                // remove the labels and put the original data
+                str = str.replaceAll("<NEWLINE>", "\n");
+                str = str.replaceAll("<EMPTY STRING>", "\0");
+                stringTable.add(str);
+            }
+        } catch (EOFException e) {
+        }
+        file.close();
+        out.seek(starting_offset);
+        out.skipBytes(20 + encoder);
+        int offset_table_pointer = readInt(out);
+        int string_start = (int) out.getFilePointer() + 28;
+        out.seek(offset_table_pointer);
+        int string_table_pointers = readInt(out);
+        int diff = string_table_pointers - string_start
+                - calculateTotalSize(stringTable);
+        if (diff < 0) {
+            System.err.println(in + " is too big, please remove at least "
+                    + -diff + " bytes. Skipped");
+            return;
+        }
+        out.seek(string_table_pointers);
+        int starting_string = readInt(out);
+        out.seek(starting_string);
+        long orig_table_pointer = string_table_pointers;
+        for (String str : stringTable) {
+            out.write(str.getBytes("UTF-8"));
+            out.writeByte(0);
+            out.writeByte(0);
+            while (out.getFilePointer() % 4 != 0) {
+                out.writeByte(0);
+            }
+            int tmp = (int) out.getFilePointer();
+            out.seek(string_table_pointers);
+            writeInt(out, starting_string);
+            string_table_pointers += 4;
+            starting_string = tmp;
+            out.seek(tmp);
+        }
+        long current_offset = out.getFilePointer();
+        while (current_offset < orig_table_pointer) {
+            out.writeByte(0);
+            current_offset++;
+        }
+    }
 
-			if (len == 1 && str.charAt(0) == 0) {
-				total++;
-			} else {
-				total += len + 1;
-			}
-		}
-		return total;
-	}
+    private int calculateTotalSize(Vector<String> st)
+            throws UnsupportedEncodingException {
+        int total = 0;
+        for (String str : st) {
+            int len = str.getBytes("UTF-8").length;
 
-	private void copyfile(String srFile, String dtFile) {
-		try {
-			File f1 = new File(srFile);
-			File f2 = new File(dtFile);
-			InputStream in = new FileInputStream(f1);
-			OutputStream out = new FileOutputStream(f2);
+            if (len == 1 && str.charAt(0) == 0) {
+                total++;
+            } else {
+                total += len + 1;
+            }
+        }
+        return total;
+    }
 
-			byte[] buf = new byte[1024];
-			int len;
-			while ((len = in.read(buf)) > 0) {
-				out.write(buf, 0, len);
-			}
-			in.close();
-			out.close();
-		} catch (FileNotFoundException ex) {
-			System.out.println(ex.getMessage() + " in the specified directory.");
-			System.exit(0);
-		} catch (IOException e) {
-			System.out.println(e.getMessage());
-		}
-	}
+    private void copyfile(String srFile, String dtFile) {
+        try {
+            File f1 = new File(srFile);
+            File f2 = new File(dtFile);
+            InputStream in = new FileInputStream(f1);
+            OutputStream out = new FileOutputStream(f2);
+
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
+            in.close();
+            out.close();
+        } catch (FileNotFoundException ex) {
+            System.out
+                    .println(ex.getMessage() + " in the specified directory.");
+            System.exit(0);
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
 }
