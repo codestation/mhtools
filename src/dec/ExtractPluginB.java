@@ -58,6 +58,7 @@ public class ExtractPluginB extends Decoder {
                 }
                 table_offset.add(pointer);
             }
+            filename = new File(filename).getName();
             String directory = filename.split("\\.")[0];
             new File(directory).mkdir();
             PrintStream filelist = new PrintStream(new FileOutputStream(

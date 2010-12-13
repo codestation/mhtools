@@ -49,6 +49,7 @@ public class ExtractPluginA extends Decoder {
             for (int i = 0; i < tables_count; i++) {
                 table_offset[i] = readInt(file);
             }
+            filename = new File(filename).getName();
             String directory = filename.split("\\.")[0];
             new File(directory).mkdir();
             // create the list of string tables used in the rebuild
