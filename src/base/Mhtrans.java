@@ -86,6 +86,10 @@ public class Mhtrans {
         }
         enc.compile(filename);
     }
+    
+    public static void createPatch(String[] args) {
+        
+    }
 
     public static void main(String[] args) {
         System.out.println("mhtrans v2.0 - MHP2G/MHFU/MHP3 xxxx.bin language table extractor/rebuilder");
@@ -99,8 +103,7 @@ public class Mhtrans {
             System.err.println("       java -jar mhtrans.jar --reb-enc <path to project folder> <encoder number>");
             System.err.println("       java -jar mhtrans.jar --gen-index <data.bin>");
             System.err.println("       java -jar mhtrans.jar --dec-all <data.bin> <path to output folder>");
-            // System.err.println("       java MHP2GTRANS --dec-single <data.bin> <path of xxxx.bin>");
-            // System.err.println("       java MHP2GTRANS --insert <path of xxxx.bin> <data.bin>");
+            System.err.println("       java -jar mhtrans.jar --create-patch <xxxx.bin.enc> [ ... <xxxx.bin.enc>]");
             System.exit(1);
         } else {
             if (args[0].equals("--extract")) {
@@ -150,17 +153,8 @@ public class Mhtrans {
                     System.exit(1);
                 }
                 new Decrypter().decrypt_whole(args[1], args[2]);
-                // } else if(args[0].equals("--dec-single")) {
-                // if(args.length < 3) {
-                // System.err.println("Output xxxx.bin missing. Aborting");
-                // System.exit(1);
-                // }
-                //
-                // } else if(args[0].equals("--insert")) {
-                // if(args.length < 3) {
-                // System.err.println("Path of data.bin missing. Aborting");
-                // System.exit(1);
-                // }
+            } else if(args[0].equals("--create-patch")) {
+                new PatchBuilder().create(args);
             } else {
                 System.err.println("Unknown parameter: " + args[0]);
                 System.exit(1);

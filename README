@@ -35,3 +35,6 @@ java -jar mhtrans.jar --dec-ext 0017.bin.enc 1
 
 To only generate a index.bin (necessary to decrypt/encrypt), e.g.:
 java -jar mhtrans.jar --gen-index /home/user/data.bin
+
+To create a patchfile, e.g.:
+java -jar mhtrans.jar --create-patch 0017.bin.enc 2813.bin.enc 2814.bin.enc
