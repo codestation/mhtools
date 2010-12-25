@@ -103,7 +103,7 @@ public class Mhtrans {
             System.err.println("       java -jar mhtrans.jar --reb-enc <path to project folder> <encoder number>");
             System.err.println("       java -jar mhtrans.jar --gen-index <data.bin>");
             System.err.println("       java -jar mhtrans.jar --dec-all <data.bin> <path to output folder>");
-            System.err.println("       java -jar mhtrans.jar --create-patch <xxxx.bin.enc> [ ... <xxxx.bin.enc>]");
+            System.err.println("       java -jar mhtrans.jar --create-patch <xxxx.bin.enc> [ ... <xxxx.bin.enc>] <output_file>");
             System.exit(1);
         } else {
             if (args[0].equals("--extract")) {

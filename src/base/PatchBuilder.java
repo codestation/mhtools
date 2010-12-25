@@ -17,8 +17,10 @@ public class PatchBuilder extends DecryptTable {
     public void create(String[] args) {
         List<String> list = new ArrayList<String>(Arrays.asList(args));
         list.remove(0);
+        String outfile = list.get(list.size()-1);
+        list.remove(list.size()-1);
         try {
-            RandomAccessFile out = new RandomAccessFile("MHP3RD_DATA.BIN", "rw");
+            RandomAccessFile out = new RandomAccessFile(outfile, "rw");
             int table_size = (list.size() + 1) * 4 * 2;
             System.out.println("Table size: " + table_size + " bytes");
             if(table_size % 16 > 0) {
