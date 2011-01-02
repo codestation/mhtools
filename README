@@ -38,3 +38,5 @@ java -jar mhtrans.jar --gen-index /home/user/data.bin
 
 To create a patchfile, e.g.:
 java -jar mhtrans.jar --create-patch 0017.bin.enc 2813.bin.enc 2814.bin.enc MHP3RD_DATA.BIN
+(Note, it can use an optional data_install.txt to create tables that can be used in
+patchers who can patch the data install)
