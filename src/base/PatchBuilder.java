@@ -82,13 +82,14 @@ public class PatchBuilder extends DecryptTable {
                 }
             }
             Vector<String> install_uniq = new Vector<String>(new LinkedHashSet<String>(install_files));
+            while(install_uniq.remove("NONE"));
             writeInt(out, install_uniq.size());
             int install_count = 0;
             String match = install_files.firstElement();
             out.write(match.getBytes());
             writeInt(out, install_count);
             for(String file : install_files) {
-                if(!match.equals(file)) {
+                if(!file.equals("NONE") && !match.equals(file)) {
                     out.write(file.getBytes());
                     match = file;
                     writeInt(out, install_count);
