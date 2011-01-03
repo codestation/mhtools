@@ -24,6 +24,14 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 public class Decrypter extends DecryptTable {
+    private byte png[] = {(byte) 0x89, 0x50, 0x4e, 0x47};
+    private byte gif[] = {0x47, 0x49, 0x46, 0x38};
+    private byte tmh[] = {0x2e, 0x54, 0x4d, 0x48};
+    private byte gim[] = {0x4d, 0x49, 0x47, 0x2e};
+    private byte mwo[] = {0x4d, 0x57, 0x6f, 0x33};
+    private byte head[] = {0x48, 0x65, 0x61, 0x64};
+    private byte dbst[] = {0x64, 0x62, 0x73, 0x54};
+    private byte wav[] = {0x52, 0x49, 0x46, 0x46};
 
     public void decrypt_index(String in, ByteArrayOutputStream index_buffer) {
         try {
@@ -96,7 +104,7 @@ public class Decrypter extends DecryptTable {
                 long file_length = (get_table_value(index_table, i * 4) - offset) << 11;
                 String fileout = out + "/0"
                         + Integer.toString(last_subdirectory) + "/"
-                        + String.format("%04d.bin", i);
+                        + String.format("%04d", i);
                 System.out.print("Decrypting " + fileout + "(" + file_length
                         + " bytes/offset: " + (offset << 11) + ") ... ");
                 decrypt_internal(filein, offset, file_length, fileout, false);
@@ -106,16 +114,44 @@ public class Decrypter extends DecryptTable {
             e.printStackTrace();
         }
     }
+    private boolean equals(byte a1[], byte a2[]) {
+        return a1[0] == a2[0] &&
+        a1[1] == a2[1] &&
+        a1[2] == a2[2] &&
+        a1[3] == a2[3];
+    }
+    
+    private String identify_file(byte buffer[], int size) {
+        if(size < 4)
+            return "bin";
+        if(equals(buffer, png))
+            return "png";
+        if(equals(buffer, gif))
+            return "gif";
+        if(equals(buffer, tmh))
+            return "tmh";
+        if(equals(buffer, gim))
+            return "gim";
+        if(equals(buffer, mwo))
+            return "mwo";
+        if(equals(buffer, head))
+            return "head";
+        if(equals(buffer, dbst))
+            return "dbst";
+        if(equals(buffer, wav))
+            return "wav";
+        return "bin";        
+    }
 
     private void decrypt_internal(RandomAccessFile filein, long pos, long size,
             String out, boolean single) {
         try {
             if (!single)
                 filein.seek(pos << 11);
-            RandomAccessFile fileout = new RandomAccessFile(out, "rw");
+            RandomAccessFile fileout = null;
             byte buffer[] = new byte[1024];
-            fileout.setLength(0);
             initSeed(pos);
+            boolean create_file = true;
             while (size > 0) {
                 int read = filein.read(buffer);
                 size -= read;
@@ -129,7 +165,19 @@ public class Decrypter extends DecryptTable {
                     long gamma = alpha ^ beta;
                     set_table_value(buffer, i, gamma);
                 }
+                if(create_file) {
+                    String ext = identify_file(buffer, read);
+                    fileout = new RandomAccessFile(out + "." + ext, "rw");
+                    fileout.setLength(0);
+                    create_file = false;
+                }
                 fileout.write(buffer);
+            }
+            if(create_file) {
+                String ext = identify_file(buffer, 0);
+                fileout = new RandomAccessFile(out + "." + ext, "rw");
+                fileout.setLength(0);
+                create_file = false;
             }
             fileout.close();
             System.out.println("Finished!");

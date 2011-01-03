@@ -63,7 +63,7 @@ public class PatchBuilder extends DecryptTable {
     }
     
     private void install_tables(RandomAccessFile out, List<String> list) {
-        System.out.print("Trying to add data_install tables...");
+        System.out.println("Trying to add data_install tables...");
         try {
             BufferedReader in = new BufferedReader(new FileReader("data_install.txt"));
             out.seek(out.length());
@@ -114,9 +114,9 @@ public class PatchBuilder extends DecryptTable {
                 filelength += 16 - (filelength % 16);
                 out.setLength(filelength);
             }
-            System.out.println("OK");
+            System.out.println("Finished");
         } catch (FileNotFoundException e) {
-            System.out.println("\ndata_install.txt not found");
+            System.out.println("data_install.txt not found");
         } catch (IOException e) {
             e.printStackTrace();
         }
