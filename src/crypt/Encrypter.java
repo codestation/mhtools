@@ -36,7 +36,19 @@ public class Encrypter extends DecryptTable {
         try {
             RandomAccessFile filein = new RandomAccessFile(in, "r");
             RandomAccessFile fileout = new RandomAccessFile(out, "rw");
-            initSeed(getOffset(extractNumber(in)));
+            int file_number = extractNumber(in);
+            long file_len = filein.length();
+            long table_len = (getOffset(file_number + 1) << 11) - (getOffset(file_number) << 11);
+            if(file_len < table_len) {
+                System.out.println(in + " filesize is less than the stored table by " +
+                        (table_len - file_len) + " bytes, fill the file with 0x00 at the end");
+                System.exit(1);
+            }else if(file_len > table_len) {
+                System.err.println(in + " filesize is greater than the stored table by " + 
+                        (file_len - table_len) + " bytes, aborting");
+                System.exit(1);
+            }
+            initSeed(getOffset(file_number));
             byte[] buffer = new byte[4];
             System.out.println("Encrypting " + in);
             while (filein.read(buffer) >= 0) {
