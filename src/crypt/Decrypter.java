@@ -140,6 +140,15 @@ public class Decrypter extends DecryptTable {
             return "dbst";
         if(equals(buffer, wav))
             return "wav";
+        if(size >= 8) {
+            if((buffer[0] == 0x3 && buffer[4] == 0x20) ||
+               (buffer[0] == 0x4 && buffer[4] == 0x30) ||
+               (buffer[0] == 0x6 && buffer[4] == 0x40) ||
+               (buffer[0] == 0x7 && buffer[4] == 0x40) ||
+               (buffer[0] == 0x8 && buffer[4] == 0x50)) {
+                return "pak";
+            }
+        }
         return "bin";        
     }
 
