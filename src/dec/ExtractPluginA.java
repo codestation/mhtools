@@ -24,13 +24,14 @@ import java.io.PrintStream;
 import java.io.RandomAccessFile;
 
 import base.Decoder;
+import base.HelperDec;
 
 /**
  * ExtractPluginA v1.0 - 0016//0017/475x.bin language table extractor
  * 
  * @author Codestation
  */
-public class ExtractPluginA extends Decoder {
+public class ExtractPluginA extends HelperDec implements Decoder {
 
     @Override
     public void extract(String filename) {

@@ -25,13 +25,14 @@ import java.io.RandomAccessFile;
 import java.util.Vector;
 
 import base.Decoder;
+import base.HelperDec;
 
 /**
  * MHP2GDEC v1.0 - 537x.bin language table extractor
  * 
  * @author Codestation
  */
-public class ExtractPluginC extends Decoder {
+public class ExtractPluginC extends HelperDec implements Decoder {
 
     @Override
     public void extract(String filename) {

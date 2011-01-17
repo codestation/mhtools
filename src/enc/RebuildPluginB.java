@@ -32,13 +32,14 @@ import java.io.UnsupportedEncodingException;
 import java.util.Vector;
 
 import base.Encoder;
+import base.HelperEnc;
 
 /**
  * RebuildPluginB v1.0 - 53xx.bin language table rebuilder
  * 
  * @author codestation
  */
-public class RebuildPluginB extends Encoder {
+public class RebuildPluginB extends HelperEnc implements Encoder {
 
     private int encoder = 0;
 

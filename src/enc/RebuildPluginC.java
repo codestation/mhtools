@@ -26,13 +26,14 @@ import java.io.RandomAccessFile;
 import java.util.Vector;
 
 import base.Encoder;
+import base.HelperEnc;
 
 /**
  * RebuildPluginC v1.0 - 537x.bin language table rebuilder
  * 
  * @author Codestation
  */
-public class RebuildPluginC extends Encoder {
+public class RebuildPluginC extends HelperEnc implements Encoder {
 
     @Override
     public void compile(String filepath) {
@@ -121,7 +122,6 @@ public class RebuildPluginC extends Encoder {
             e.printStackTrace();
         }
     }
-
     /**
      * 
      * @param in

@@ -29,13 +29,14 @@ import java.io.RandomAccessFile;
 import java.util.Vector;
 
 import base.Decoder;
+import base.HelperDec;
 
 /**
  * ExtractPluginB v1.0 - 53xx.bin language table extractor
  * 
  * @author Codestation
  */
-public class ExtractPluginB extends Decoder {
+public class ExtractPluginB extends HelperDec implements Decoder {
 
     private int mhp3_skip_bytes;
 
@@ -48,7 +49,7 @@ public class ExtractPluginB extends Decoder {
         byte[] unknownData;
         Vector<Integer> table_offset;
         try {
-            RandomAccessFile file = new RandomAccessFile(filename, "r");
+            RandomAccessFile file = new RandomAccessFile(filename,"r");
             table_offset = new Vector<Integer>();
             int pointer;
             while (true) {

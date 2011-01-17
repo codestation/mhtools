@@ -28,9 +28,11 @@ import crypt.Encrypter;
 import dec.ExtractPluginA;
 import dec.ExtractPluginB;
 import dec.ExtractPluginC;
+import dec.ExtractPluginD;
 import enc.RebuildPluginA;
 import enc.RebuildPluginB;
 import enc.RebuildPluginC;
+import enc.RebuildPluginD;
 
 public class Mhtrans {
 
@@ -54,6 +56,9 @@ public class Mhtrans {
         case 3:
             dec = new ExtractPluginC();
             break;
+        case 5:
+            dec = new ExtractPluginD();
+            break;
         default:
             System.err.println("Unknown decoder: " + decoder);
             System.exit(1);
@@ -62,11 +67,14 @@ public class Mhtrans {
     }
 
     public static void rebuild(String filename, String encoder) {
-        String str = checkFile(filename + "/filelist.txt");
         Encoder enc = null;
-        if (str == null)
-            System.exit(1);
         int type = Integer.parseInt(encoder);
+        if(type < 5) {
+            String str = checkFile(filename + "/filelist.txt");
+            if (str == null) {
+                System.exit(1);
+            }
+        }
         switch (type) {
         case 1:
             enc = new RebuildPluginA();
@@ -79,6 +87,9 @@ public class Mhtrans {
             break;
         case 3:
             enc = new RebuildPluginC();
+            break;
+        case 5:
+            enc = new RebuildPluginD();
             break;
         default:
             System.err.println("Unknown encoder: " + encoder);

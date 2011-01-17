@@ -1,8 +1,11 @@
 # translation_file, data_install_file, offset in the data install file where translation_file is found
-# Note: if you add files that doesn't exist in the data install just follow the
-# format of the 0098
 0017,0011,00204000
+0043,0011,00310800
+0045,0011,00316000
+0046,0011,0031A800
+0047,0011,0031F000
 0098,NONE,FFFFFFFF
+0222,0013,00143000
 2813,0031,00280800
 2814,0031,00284800
 2816,0031,002AE000
@@ -20,3 +23,4 @@
 3985,0032,00369000
 3986,0033,00000000
 3987,0033,00001000
+3992,0033,000CC000
