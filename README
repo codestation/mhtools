@@ -40,3 +40,13 @@ To create a patchfile, e.g.:
 java -jar mhtrans.jar --create-patch 0017.bin.enc 2813.bin.enc 2814.bin.enc MHP3RD_DATA.BIN
 (Note, it can use an optional data_install.txt to create tables that can be used in
 patchers who can patch the data install)
+
+To extract images from a TMH container
+java -jar mhtrans.jar --extract container.tmh 5
+
+
+To pack images into a TMH container
+java -jar mhtrans.jar --rebuild /home/user/unpacked_countainer_dir 5
+
+To unpack a .pak file
+java -jar mhtrans.jar --extract file.pak 6
