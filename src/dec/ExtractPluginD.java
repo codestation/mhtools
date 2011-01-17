@@ -17,14 +17,17 @@
 
 package dec;
 
+
 import img.Gim;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import javax.imageio.ImageIO;
+
 
 import base.Decoder;
 import base.EndianFixer;
@@ -38,8 +41,21 @@ public class ExtractPluginD extends EndianFixer implements Decoder {
     
     @Override
     public void extract(String filename) {
+        String directory = filename.split("\\.")[0];
+        new File(directory).mkdir();
         try {
-            FileInputStream file = new FileInputStream(filename);            
+            FileInputStream file = new FileInputStream(filename);
+            extract(file, directory);
+            file.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void extract(FileInputStream file, String directory) {
+        try {            
             byte header_id[] = new byte[8];
             file.read(header_id);
             int header_gim_count = readInt(file);
@@ -51,8 +67,6 @@ public class ExtractPluginD extends EndianFixer implements Decoder {
                 int buffered_type = BufferedImage.TYPE_INT_ARGB;
                 BufferedImage bi = new BufferedImage(gim.getWidth(), gim.getHeight(), buffered_type);
                 bi.setRGB(0, 0, gim.getWidth(), gim.getHeight(), gim.getRGBarray(), 0, gim.getWidth());
-                String directory = filename.split("\\.")[0];
-                new File(directory).mkdir();
                 String fileformat;
                 String format;
                 if(gim.getDataType() == Gim.GIM_TYPE_PALETTE)
@@ -82,8 +96,6 @@ public class ExtractPluginD extends EndianFixer implements Decoder {
                     out.close();
                 }
             }
-            file.close();
-            System.out.println("Finished!");
         } catch (IOException e) {
             e.printStackTrace();
         }

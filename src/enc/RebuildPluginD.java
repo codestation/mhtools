@@ -17,6 +17,7 @@
 
 package enc;
 
+
 import img.Gim;
 
 import java.awt.image.BufferedImage;
@@ -29,6 +30,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 import javax.imageio.ImageIO;
+
 
 import base.Encoder;
 import base.EndianFixer;

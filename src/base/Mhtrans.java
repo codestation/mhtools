@@ -29,6 +29,7 @@ import dec.ExtractPluginA;
 import dec.ExtractPluginB;
 import dec.ExtractPluginC;
 import dec.ExtractPluginD;
+import dec.ExtractPluginE;
 import enc.RebuildPluginA;
 import enc.RebuildPluginB;
 import enc.RebuildPluginC;
@@ -58,6 +59,9 @@ public class Mhtrans {
             break;
         case 5:
             dec = new ExtractPluginD();
+            break;
+        case 6:
+            dec = new ExtractPluginE();
             break;
         default:
             System.err.println("Unknown decoder: " + decoder);
