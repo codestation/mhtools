@@ -34,90 +34,42 @@ import base.EndianFixer;
  */
 public class ExtractPluginE extends EndianFixer implements Decoder {
     
+    byte pmo[] = {0x70, 0x6d, 0x6f, 0x00};
+    byte tmh[] = {0x2E, 0x54, 0x4D, 0x48};
+    
     @Override
     public void extract(String filename) {
         String directory = filename.split("\\.")[0];
         new File(directory).mkdir();
         try {
-            RandomAccessFile file = new RandomAccessFile(filename,"rw");
-            int flag0 = readInt(file);
-            if(flag0 == 0x8) {
-                int init0_offset = readInt(file);
-                int init0_size = readInt(file);
-                
-                int pmo0_offset = readInt(file);
-                int pmo0_size = readInt(file);
-                int tmh0_offset = readInt(file);
-                int tmh0_size = readInt(file);
-                int data0_offset = readInt(file);    
-                int data0_size = readInt(file);
-                
-                @SuppressWarnings("unused")
-                int pad0_offset = readInt(file);
-                @SuppressWarnings("unused")
-                int pad0_size = readInt(file);
-                
-                int pmo1_offset = readInt(file);
-                int pmo1_size = readInt(file);
-                int tmh1_offset = readInt(file);
-                int tmh1_size = readInt(file);
-                int data1_offset = readInt(file);
-                int data1_size = readInt(file);
-                
-                file.seek(init0_offset);
-                save_file(directory + "/000_unk0.dat", file, init0_size);
-                
-                file.seek(pmo0_offset);
-                save_file(directory + "/001_data0.pmo", file, pmo0_size);
-                file.seek(tmh0_offset);
-                save_file(directory + "/002_data0.tmh", file, tmh0_size);
-                Decoder dec = new ExtractPluginD();
-                dec.extract(directory + "/002_data0.tmh");
-                file.seek(data0_offset);
-                save_file(directory + "/003_data0.bin", file, data0_size);
-                
-                file.seek(pmo1_offset);
-                save_file(directory + "/004_data1.pmo", file, pmo1_size);
-                file.seek(tmh1_offset);
-                save_file(directory + "/005_data1.tmh", file, tmh1_size);
-                dec.extract(directory + "/005_data1.tmh");
-                file.seek(data1_offset);
-                save_file(directory + "/006_data1.bin", file, data1_size);
-            }
-            if(flag0 == 0x4) {
-                int init0_offset = readInt(file);
-                int init0_size = readInt(file);                
-                int pmo0_offset = readInt(file);
-                int pmo0_size = readInt(file);
-                int tmh0_offset = readInt(file);
-                int tmh0_size = readInt(file);
-                
-                file.seek(init0_offset);
-                save_file(directory + "/000_unk0.dat", file, init0_size);
-                
-                file.seek(pmo0_offset);
-                save_file(directory + "/001_data0.pmo", file, pmo0_size);
-                file.seek(tmh0_offset);
-                save_file(directory + "/002_data0.tmh", file, tmh0_size);
-                Decoder dec = new ExtractPluginD();
-                dec.extract(directory + "/002_data0.tmh");
-            }
-            if(flag0 == 0x3) {
-                int pmo0_offset = readInt(file);
-                int pmo0_size = readInt(file);            
-                int unk0_offset = readInt(file);                
-                int unk0_size = readInt(file);                
-                int tmh0_offset = readInt(file);                
-                int tmh0_size = readInt(file);
-                
-                file.seek(pmo0_offset);
-                save_file(directory + "/000_data0.pmo", file, pmo0_size);
-                file.seek(unk0_offset);
-                save_file(directory + "/001_unk0.dat", file, unk0_size);
-                file.seek(tmh0_offset);
-                save_file(directory + "/002_data0.tmh", file, tmh0_size);
-                Decoder dec = new ExtractPluginD();
-                dec.extract(directory + "/002_data0.tmh");
+            RandomAccessFile file = new RandomAccessFile(filename,"r");
+            int count = readInt(file);
+            long current = 4;
+            for(int i = 0; i < count; i++) {
+                file.seek(current);
+                int file_offset = readInt(file);
+                int file_size = readInt(file);
+                current = file.getFilePointer();
+                if(file_offset == 0)
+                    continue;
+                file.seek(file_offset);
+                byte buffer[] = new byte[file_size];
+                file.read(buffer);
+                String fileout = String.format(directory + "/%03d", i);
+                if(equals(buffer, pmo, 4)) {
+                    fileout += "_data.pmo";
+                } else if(equals(buffer, tmh, 4)) {
+                    fileout += "_image.tmh";
+                } else {
+                    fileout += "_data.bin";
+                }
+                System.out.println("Extracting " + fileout);
+                FileOutputStream out = new FileOutputStream(fileout);
+                out.write(buffer);
+                out.close();
+                if(fileout.endsWith(".tmh")) {
+                    new ExtractPluginD().extract(fileout);
+                }                
             }
             file.close();
         } catch (FileNotFoundException e) {
@@ -127,11 +79,13 @@ public class ExtractPluginE extends EndianFixer implements Decoder {
         }
     }
     
-    private void save_file(String filename, RandomAccessFile in, int size) throws FileNotFoundException, IOException {
-        FileOutputStream out = new FileOutputStream(filename);
-        byte buffer[] = new byte[size];
-        in.read(buffer);
-        out.write(buffer);
-        out.close();
+    private boolean equals(byte a[], byte b[], int size) {
+        int i = 0;
+        while(i < size) {
+            if(a[i] != b[i])
+                return false;
+            i++;
+        }
+        return true;
     }
 }

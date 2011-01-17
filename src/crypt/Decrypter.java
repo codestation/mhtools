@@ -141,11 +141,18 @@ public class Decrypter extends DecryptTable {
         if(equals(buffer, wav))
             return "wav";
         if(size >= 8) {
-            if((buffer[0] == 0x3 && buffer[4] == 0x20) ||
+            if((buffer[0] == 0x3 && buffer[4] == 0x0) ||
+               (buffer[0] == 0x3 && buffer[4] == 0x20) ||
                (buffer[0] == 0x4 && buffer[4] == 0x30) ||
                (buffer[0] == 0x6 && buffer[4] == 0x40) ||
                (buffer[0] == 0x7 && buffer[4] == 0x40) ||
-               (buffer[0] == 0x8 && buffer[4] == 0x50)) {
+               (buffer[0] == 0x8 && buffer[4] == 0x50) ||               
+               (buffer[0] == 0xC && buffer[4] == 0x70) ||
+               (buffer[0] == 0xD && buffer[4] == 0x70) ||
+               (buffer[0] == 0xE && buffer[4] == (byte)0x80) ||
+               (buffer[0] == 0xF && buffer[4] == (byte)0x80) ||
+               (buffer[0] == 0x10 && buffer[4] == (byte)0x90) ||
+               (buffer[0] == 0x28 && buffer[4] == (byte)0x150)) {               
                 return "pak";
             }
         }
