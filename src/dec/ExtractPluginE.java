@@ -50,8 +50,10 @@ public class ExtractPluginE extends EndianFixer implements Decoder {
                 int file_offset = readInt(file);
                 int file_size = readInt(file);
                 current = file.getFilePointer();
-                if(file_offset == 0)
-                    continue;
+                if(file_offset == 0) {
+                   new File(String.format("%s/%03d_empty.bin", directory, i)).createNewFile();
+                   continue;
+                }
                 file.seek(file_offset);
                 byte buffer[] = new byte[file_size];
                 file.read(buffer);

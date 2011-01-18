@@ -12,6 +12,7 @@ public class Gim extends EndianFixer {
     public static final int RGBA8888 = 3;
     public static final int RGBA5551 = 1;
     public static final int GIM_TYPE_PIXELS = 4;
+    public static final int GIM_TYPE_NOPALETTE = 8;
     public static final int GIM_TYPE_PALETTE = 5;
     public static final int HEADER_SIZE = 16;
     public static final int BPP32_BYTE = 4;
@@ -47,13 +48,15 @@ public class Gim extends EndianFixer {
         height = readShort(in);
         imagedata = new byte[data_size - 16];
         in.read(imagedata);
-        palette_size = readInt(in);
-        palette_flags = readInt(in);
-        palette_type = readInt(in);
-        palette_count = readInt(in);
-        int palette_datasize = palette_count * (palette_type == RGBA8888 ? 4 : 2);
-        palettedata = new byte[palette_datasize];
-        in.read(palettedata);
+        if(data_type != GIM_TYPE_NOPALETTE) {
+            palette_size = readInt(in);
+            palette_flags = readInt(in);
+            palette_type = readInt(in);
+            palette_count = readInt(in);
+            int palette_datasize = palette_count * (palette_type == RGBA8888 ? 4 : 2);
+            palettedata = new byte[palette_datasize];
+            in.read(palettedata);
+        }
         loaded = true;
     }
     
@@ -151,11 +154,13 @@ public class Gim extends EndianFixer {
         writeShort(out, width);
         writeShort(out, height);
         out.write(imagedata);
-        writeInt(out, palette_size);
-        writeInt(out, palette_flags);
-        writeInt(out, palette_type);
-        writeInt(out, palette_count);
-        out.write(palettedata);
+        if(data_type != GIM_TYPE_NOPALETTE) {
+            writeInt(out, palette_size);
+            writeInt(out, palette_flags);
+            writeInt(out, palette_type);
+            writeInt(out, palette_count);
+            out.write(palettedata);
+        }
         return true;
     }
     
@@ -278,7 +283,7 @@ public class Gim extends EndianFixer {
     }
     
     public boolean isSupported() {
-        return (data_type == GIM_TYPE_PIXELS && palette_count <=16) ||
+        return (data_type != GIM_TYPE_NOPALETTE) || (data_type == GIM_TYPE_PIXELS && palette_count <=16) ||
         (data_type == GIM_TYPE_PALETTE && palette_count <= 256);
     }
 }

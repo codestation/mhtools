@@ -64,33 +64,42 @@ public class ExtractPluginD extends EndianFixer implements Decoder {
             for(int i = 0; i < header_gim_count; i++) {
                 Gim gim = new Gim();
                 gim.load(file);
-                int buffered_type = BufferedImage.TYPE_INT_ARGB;
-                BufferedImage bi = new BufferedImage(gim.getWidth(), gim.getHeight(), buffered_type);
-                bi.setRGB(0, 0, gim.getWidth(), gim.getHeight(), gim.getRGBarray(), 0, gim.getWidth());
                 String fileformat;
                 String format;
+                String fileout;
                 if(gim.getDataType() == Gim.GIM_TYPE_PALETTE)
                     format = "palette";
                 else if(gim.getDataType() == Gim.GIM_TYPE_PIXELS)
                     format = "pixels";
+                else if(gim.getDataType() == Gim.GIM_TYPE_NOPALETTE)
+                    format = "none";
                 else
                     format = "image";
-                String palette;
-                if(gim.getPaletteType() == Gim.RGBA8888) {
-                    palette = "RGBA8888";
-                } else {
-                    palette = "RGBA5551";  
+                String palette = null;
+                if(gim.getDataType() != Gim.GIM_TYPE_NOPALETTE) {
+                    if(gim.getPaletteType() == Gim.RGBA8888) {
+                        palette = "RGBA8888";
+                    } else {
+                        palette = "RGBA5551";  
+                    }
                 }
                 if(gim.isSupported()) {
+                    int buffered_type = BufferedImage.TYPE_INT_ARGB;
+                    BufferedImage bi = new BufferedImage(gim.getWidth(), gim.getHeight(), buffered_type);
+                    bi.setRGB(0, 0, gim.getWidth(), gim.getHeight(), gim.getRGBarray(), 0, gim.getWidth());
                     fileformat = "png";
-                    String fileout = String.format(directory + "/%03d", i) + "_" + format + "_" + palette + "." + fileformat;
+                    fileout = String.format(directory + "/%03d", i) + "_" + format + "_" + palette + "." + fileformat;
                     System.out.println("Extracting " + fileout);
                     File out = new File(fileout);
                     out.delete();
                     ImageIO.write(bi,fileformat, out);
                 } else {
                     fileformat = "gim";
-                    String fileout = String.format(directory + "/%03d", i) + "_" + format + "_" + palette + "." + fileformat;
+                    if(palette != null)
+                        fileout = String.format(directory + "/%03d", i) + "_" + format + "_" + palette + "." + fileformat;
+                    else
+                        fileout = String.format(directory + "/%03d", i) + "_" + format + "." + fileformat;
+                    System.out.println("Extracting " + fileout);
                     FileOutputStream out = new FileOutputStream(fileout);
                     gim.write(out);
                     out.close();
