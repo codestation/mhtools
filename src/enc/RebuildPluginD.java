@@ -60,7 +60,7 @@ public class RebuildPluginD extends EndianFixer implements Encoder {
                 }
             });
             if(files.length > 0) {
-                FileOutputStream out = new FileOutputStream(dir.getName() + ".bin");
+                FileOutputStream out = new FileOutputStream(dir.getName() + ".tmh");
                 out.write(id);
                 writeInt(out, files.length);
                 writeInt(out, 0);
@@ -89,7 +89,8 @@ public class RebuildPluginD extends EndianFixer implements Encoder {
                             depth = Gim.RGBA5551;
                         else
                             depth = 0;
-                        gim.setRGBarray(img.getWidth(), img.getHeight(), rgbArray, type, depth);
+                        if(!gim.setRGBarray(img.getWidth(), img.getHeight(), rgbArray, type, depth))
+                            System.err.println("Create RGB array failed");
                     }
                     gim.write(out);
                 }

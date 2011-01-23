@@ -78,6 +78,8 @@ public class Gim extends EndianFixer {
             data_size += (width / 2) * height;
             imagedata = new byte[data_size - HEADER_SIZE];
             palette_count = fill_to_palette(rgb);
+            if(palette_count == -1)
+                return false;
             palette_count = 16;
             palette_size += palettesize;
             size = data_size + palette_size + HEADER_SIZE;            
@@ -87,6 +89,8 @@ public class Gim extends EndianFixer {
             data_size += width * height;
             imagedata = new byte[data_size - HEADER_SIZE];
             palette_count = fill_to_palette(rgb);
+            if(palette_count == -1)
+                return false;
             palette_count = 256;
             palette_size += palettesize;
             size = data_size + palette_size + HEADER_SIZE;
@@ -182,6 +186,8 @@ public class Gim extends EndianFixer {
                         }
                         int color = rgb[off];
                         int index = set_unique_color(color);
+                        if(index == -1)
+                            return -1;
                         if(data_type == GIM_TYPE_PIXELS) {
                             if(flip) {
                                 imagedata[counter] |= (byte) (index << 4);
@@ -199,7 +205,7 @@ public class Gim extends EndianFixer {
                 }
             }
         }
-        return palette_count;
+        return palettedata_count;
     }
     
     private void set_color(int color, int offset) {
@@ -233,6 +239,11 @@ public class Gim extends EndianFixer {
                 return i;
             }
             i++;
+        }
+        if(data_type == GIM_TYPE_PALETTE && i >= 256 ||
+                data_type == GIM_TYPE_PIXELS && i >= 16) {
+            System.err.println("Maximum number of color in palette reached (" + i + ")");
+            return -1;
         }
         set_color(color, i * (palette_type == RGBA8888 ? 4 : 2));
         palettedata_count = i + 1;

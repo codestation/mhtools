@@ -34,6 +34,7 @@ import enc.RebuildPluginA;
 import enc.RebuildPluginB;
 import enc.RebuildPluginC;
 import enc.RebuildPluginD;
+import enc.RebuildPluginE;
 
 public class Mhtrans {
 
@@ -94,6 +95,9 @@ public class Mhtrans {
             break;
         case 5:
             enc = new RebuildPluginD();
+            break;
+        case 6:
+            enc = new RebuildPluginE();
             break;
         default:
             System.err.println("Unknown encoder: " + encoder);
