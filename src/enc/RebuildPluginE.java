@@ -80,24 +80,31 @@ public class RebuildPluginE extends EndianFixer implements Encoder {
                             new File(file.getName()).renameTo(new File(dir + "/" + file.getName()));
                         }
                     }
-                    out.seek(table_start);
-                    writeInt(out, (int)data_start);
-                    writeInt(out, (int)file.length());
-                    table_start = out.getFilePointer();
                     System.out.println("Processing " + file.getName());
-                    FileInputStream in = new FileInputStream(file);
-                    byte buffer[] = new byte[(int) file.length()];
-                    in.read(buffer);
-                    out.seek(data_start);
-                    out.write(buffer);
-                    long curr_pos = out.getFilePointer();
-                    data_start = curr_pos;
-                    if(data_start % 16 > 0)
-                        data_start += 16 - (data_start % 16);
-                    while(curr_pos < data_start) {
-                        out.writeByte(0);
-                        curr_pos++;
-                    }                    
+                    out.seek(table_start);
+                    if(file.length() == 0) {
+                        writeInt(out, 0);
+                        writeInt(out, 0);
+                    } else {
+                        writeInt(out, (int)data_start);
+                        writeInt(out, (int)file.length());
+                    }
+                    table_start = out.getFilePointer();
+                    if(file.length() > 0) {
+                        FileInputStream in = new FileInputStream(file);
+                        byte buffer[] = new byte[(int) file.length()];
+                        in.read(buffer);
+                        out.seek(data_start);
+                        out.write(buffer);
+                        long curr_pos = out.getFilePointer();
+                        data_start = curr_pos;
+                        if(data_start % 16 > 0)
+                            data_start += 16 - (data_start % 16);
+                        while(curr_pos < data_start) {
+                            out.writeByte(0);
+                            curr_pos++;
+                        }
+                    }
                 }
                 out.setLength(data_start);
                 out.close();
