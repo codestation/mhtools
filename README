@@ -1,4 +1,4 @@
-MH string tables unpacker/rebuilder/encrypter/decrypter.
+MH utilities - codestation
 
 encoder/decoder number meaning to use in binary files:
 
@@ -50,3 +50,8 @@ java -jar mhtrans.jar --rebuild /home/user/unpacked_countainer_dir 5
 
 To unpack a .pak file
 java -jar mhtrans.jar --extract file.pak 6
+
+The KIRK related functions are untested and requires the Bouncy Castle Crypto API
+that can be downloaded from http://www.bouncycastle.org/download/bcprov-jdk16-146.jar
+
+The PSP Crypto engine and AES wrapper comes from the Jpcsp project.

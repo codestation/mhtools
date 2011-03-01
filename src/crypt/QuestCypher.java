@@ -47,12 +47,14 @@ public class QuestCypher implements QuestKeys {
             ShortBuffer sb = bt.asShortBuffer();
             short short_bt[] = new short[byte_bt.length/2];
             sb.get(short_bt);
+            System.out.println("Decrypting quest file");
             decrypt_quest(short_bt);
             sb.rewind();
             sb.put(short_bt);
             FileOutputStream out = new FileOutputStream(filein + ".dec");
             out.write(byte_bt);
             out.close();
+            System.out.println("finished.");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -68,18 +70,21 @@ public class QuestCypher implements QuestKeys {
             byte byte_bt[] = new byte[(int)fd.length()];
             in.read(byte_bt);
             in.close();
+            System.out.println("Updating sha1 hash");
             update_sha1(byte_bt);
             ByteBuffer bt = ByteBuffer.wrap(byte_bt);
             bt.order(ByteOrder.LITTLE_ENDIAN);
             ShortBuffer sb = bt.asShortBuffer();
             short short_bt[] = new short[byte_bt.length/2];
             sb.get(short_bt);
+            System.out.println("Encrypting quest file");
             encrypt_quest(short_bt);
             sb.rewind();
             sb.put(short_bt);
             FileOutputStream out = new FileOutputStream(filein + ".enc");
             out.write(byte_bt);
             out.close();
+            System.out.println("Finished");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -122,10 +127,11 @@ public class QuestCypher implements QuestKeys {
             byte byte_bt[] = new byte[(int)fd.length()];
             fd.read(byte_bt);
             fd.seek(0);
+            System.out.println("Updating sha1 hash");
             update_sha1(byte_bt);
             fd.write(byte_bt);
             fd.close();
-
+            System.out.println("Finished");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -135,14 +141,14 @@ public class QuestCypher implements QuestKeys {
     
     private void update_sha1(byte buf[]) {
         int len = ((buf[8+3] << 24) & 0xFFFFFFFF) + ((buf[8+2] << 16) & 0xFFFFFF) + ((buf[8+1] << 8) & 0xFFFF) + ((buf[8+0] << 0) & 0xFF);
-        len += 0x10;
+        len += quest_sha1_key.length();
         byte buffer[] = new byte[len];
-        System.arraycopy(buf, 0x20, buffer, 0, len-0x10);
-        System.arraycopy(quest_sha1_key.getBytes(), 0, buffer, len-0x10, 0x10);
+        System.arraycopy(buf, 0x20, buffer, 0, len-quest_sha1_key.length());
+        System.arraycopy(quest_sha1_key.getBytes(), 0, buffer, len-quest_sha1_key.length(), quest_sha1_key.length());
         try {
             MessageDigest md = MessageDigest.getInstance("sha-1");
             byte digest[] = md.digest(buffer);
-            System.arraycopy(digest, 0, buf, 12, 0x10);
+            System.arraycopy(digest, 0, buf, 12, digest.length);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }

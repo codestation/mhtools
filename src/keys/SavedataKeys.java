@@ -75,4 +75,6 @@ public interface SavedataKeys {
     final long seed_b = 0xDFA3;
     final long mod_a = 0xFF8F;
     final long mod_b = 0xFFEF;
+    
+    final String savedata_sha1_key = "VQ(DOdIO9?X3!2GmW#XF";
 }
