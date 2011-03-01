@@ -1,5 +1,5 @@
-/*  MHP2GDEC v1.0 - MHP2G xxxx.bin language table extractor/rebuilder/encrypter/decrypter
-    Copyright (C) 2008 Codestation
+/*  MHTrans - MH Utilities
+    Copyright (C) 2008-2011 Codestation
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,6 +25,8 @@ import java.io.IOException;
 
 import crypt.Decrypter;
 import crypt.Encrypter;
+import crypt.QuestCypher;
+import crypt.SavedataCypher;
 import dec.ExtractPluginA;
 import dec.ExtractPluginB;
 import dec.ExtractPluginC;
@@ -123,6 +125,11 @@ public class Mhtrans {
             System.err.println("       java -jar mhtrans.jar --gen-index <data.bin>");
             System.err.println("       java -jar mhtrans.jar --dec-all <data.bin> <path to output folder>");
             System.err.println("       java -jar mhtrans.jar --create-patch <xxxx.bin.enc> [ ... <xxxx.bin.enc>] <output_file>");
+            System.err.println("       java -jar mhtrans.jar --decrypt-quest <mxxxxx.mib>");
+            System.err.println("       java -jar mhtrans.jar --encrypt-quest <mxxxxx.mib>");
+            //System.err.println("       java -jar mhtrans.jar --update-sha1 <mxxxxx.mib>");
+            System.err.println("       java -jar mhtrans.jar --decrypt-save <xxxxx.bin>");
+            //System.err.println("       java -jar mhtrans.jar --encrypt-save <xxxxx.bin>");
             System.exit(1);
         } else {
             if (args[0].equals("--extract")) {
@@ -174,6 +181,16 @@ public class Mhtrans {
                 new Decrypter().decrypt_whole(args[1], args[2]);
             } else if(args[0].equals("--create-patch")) {
                 new PatchBuilder().create(args);
+            } else if(args[0].equals("--encrypt-quest")) {
+                new QuestCypher().encrypt(args[1]);
+            } else if(args[0].equals("--decrypt-quest")) {
+                new QuestCypher().decrypt(args[1]);
+            //} else if(args[0].equals("--update-sha1")) {
+            //    new QuestCypher().update_sha1(args[1]);
+            //} else if(args[0].equals("--encrypt-save")) {
+            //    new SavedataCypher().encrypt(args[1]);
+            } else if(args[0].equals("--decrypt-save")) {
+                new SavedataCypher().decrypt(args[1]);
             } else {
                 System.err.println("Unknown parameter: " + args[0]);
                 System.exit(1);

@@ -1,4 +1,4 @@
-/*  MHTRANS v1.0
+/*  MHTrans - MH Utilities
     Copyright (C) 2011 Codestation
 
     This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-public abstract class HelperEnc extends EndianFixer {
+public abstract class HelperEnc extends MHUtils {
     protected String readString(RandomAccessFile file) throws IOException {
         byte[] buffer = new byte[1024];
         byte data = 0;

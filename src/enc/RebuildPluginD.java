@@ -1,18 +1,18 @@
-/*  MHP2GENC v1.0 - TMH image rebuilder
- Copyright (C) 2008-2010 codestation
+/*  MHTrans - TMH image rebuilder
+    Copyright (C) 2011 Codestation
 
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package enc;
@@ -33,14 +33,14 @@ import javax.imageio.ImageIO;
 
 
 import base.Encoder;
-import base.EndianFixer;
+import base.MHUtils;
 
 /**
  * RebuildPluginD v1.0
  * 
  * @author Codestation
  */
-public class RebuildPluginD extends EndianFixer implements Encoder {
+public class RebuildPluginD extends MHUtils implements Encoder {
     
     private byte id[] = {0x2e, 0x54, 0x4d, 0x48, 0x30, 0x2e, 0x31, 0x34};
 

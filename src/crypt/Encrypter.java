@@ -1,5 +1,5 @@
-/*  MHP2GDEC v1.0 - MHP2G data.bin/xxxx.bin encrypter
-    Copyright (C) 2008 Codestation
+/*  MHTrans - MH data.bin/xxxx.bin decrypter
+    Copyright (C) 2008-2011 Codestation
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,9 +21,38 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-public class Encrypter extends DecryptTable {
+import keys.DataKeys;
+
+import base.MHUtils;
+
+public class Encrypter extends DecryptUtils implements DataKeys {
 
     private byte[] encrypt_table;
+    
+    @Override
+    protected byte[] getDecryptTable() {
+        return decrypter_table;
+    }
+    
+    @Override
+    protected long getSeedKeyA() {
+        return 0x7F8D;
+    }
+
+    @Override
+    protected long getSeedKeyB() {
+        return 0x2345;
+    }
+
+    @Override
+    protected long getModA() {
+        return 0xFFF1;
+    }
+
+    @Override
+    protected long getModB() {
+        return 0xFFD9;
+    }
 
     public Encrypter() {
         encrypt_table = new byte[256];
@@ -36,9 +65,9 @@ public class Encrypter extends DecryptTable {
         try {
             RandomAccessFile filein = new RandomAccessFile(in, "r");
             RandomAccessFile fileout = new RandomAccessFile(out, "rw");
-            int file_number = extractNumber(in);
+            int file_number = MHUtils.extractNumber(in);
             long file_len = filein.length();
-            long table_len = (getOffset(file_number + 1) << 11) - (getOffset(file_number) << 11);
+            long table_len = (MHUtils.getOffset(file_number + 1) << 11) - (MHUtils.getOffset(file_number) << 11);
             if(file_len < table_len) {
                 System.out.println(in + " filesize is less than the stored table by " +
                         (table_len - file_len) + " bytes, fill the file with 0x00 at the end");
@@ -48,7 +77,7 @@ public class Encrypter extends DecryptTable {
                         (file_len - table_len) + " bytes, aborting");
                 System.exit(1);
             }
-            initSeed(getOffset(file_number));
+            initSeed(MHUtils.getOffset(file_number));
             byte[] buffer = new byte[4];
             System.out.println("Encrypting " + in);
             while (filein.read(buffer) >= 0) {
@@ -56,10 +85,7 @@ public class Encrypter extends DecryptTable {
                 long beta = getBeta();
                 long alpha = beta ^ gamma;
                 set_table_value(buffer, 0, alpha);
-                buffer[0] = encrypt_table[buffer[0] & 0xFF];
-                buffer[1] = encrypt_table[buffer[1] & 0xFF];
-                buffer[2] = encrypt_table[buffer[2] & 0xFF];
-                buffer[3] = encrypt_table[buffer[3] & 0xFF];
+                get_table_value(encrypt_table, buffer);
                 fileout.write(buffer);
             }
             filein.close();

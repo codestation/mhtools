@@ -1,5 +1,5 @@
-/*  MHP2GDEC v1.0 - MH data.bin/xxxx.bin encrypter/decrypter
-    Copyright (C) 2008 codestation
+/*  MHTrans - MHP3 data keys
+    Copyright (C) 2011 Codestation
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,17 +15,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package crypt;
+package keys;
 
-//import java.io.EOFException;
-import java.io.EOFException;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-
-public abstract class DecryptTable {
-
-    protected final byte decrypt_table[] = { (byte) 0xCB, (byte) 0x96,
+public interface DataKeys {
+    final byte decrypter_table[] = { (byte) 0xCB, (byte) 0x96,
             (byte) 0x85, (byte) 0xA6, (byte) 0x5F, (byte) 0x3E, (byte) 0xAB,
             (byte) 0x03, (byte) 0x50, (byte) 0xB7, (byte) 0x9C, (byte) 0x5C,
             (byte) 0xB2, (byte) 0x40, (byte) 0xEF, (byte) 0xF6, (byte) 0xFF,
@@ -77,71 +70,10 @@ public abstract class DecryptTable {
             (byte) 0x3B, (byte) 0x1A, (byte) 0x4C, (byte) 0x78, (byte) 0xC2,
             (byte) 0x60, (byte) 0xEE, (byte) 0x98, (byte) 0x6B, (byte) 0x0D,
             (byte) 0x99, (byte) 0xEA, (byte) 0xC5, (byte) 0xAC };
-
-    private long lower_offset;
-    private long upper_offset;
-
-    protected void initSeed(long seed) {
-        lower_offset = seed & 0xFFFF;
-        upper_offset = seed >> 0x10 & 0xFFFF;
-        if (lower_offset == 0) {
-            lower_offset = 0x7F8D;
-        }
-        if (upper_offset == 0) {
-            upper_offset = 0x2345;
-        }
-    }
-
-    protected long getBeta() {
-        lower_offset = (lower_offset * 0x7F8D) % 0xFFF1;
-        upper_offset = (upper_offset * 0x2345) % 0xFFD9;
-        return lower_offset + (upper_offset << 0x10);
-    }
-
-    protected void set_table_value(byte table[], int pos, long value) {
-        table[pos] = (byte) value;
-        table[pos + 1] = (byte) (value >> 8);
-        table[pos + 2] = (byte) (value >> 16);
-        table[pos + 3] = (byte) (value >> 24);
-    }
-
-    protected long get_table_value(byte table[], int pos) {
-        return (table[pos] & 0xFF) + ((long) (table[pos + 1] & 0xFF) << 8)
-                + ((long) (table[pos + 2] & 0xFF) << 16)
-                + ((long) (table[pos + 3] & 0xFF) << 24);
-    }
-
-    /*
-     * Can't use the RandomAccessFile readInt func as we need the bytes in
-     * reverse order
-     */
-    private int readInt(RandomAccessFile file) throws IOException, EOFException {
-        int ch1 = file.read();
-        int ch2 = file.read();
-        int ch3 = file.read();
-        int ch4 = file.read();
-        if ((ch1 | ch2 | ch3 | ch4) < 0) {
-            throw new EOFException();
-        }
-        return (ch4 << 24) + (ch3 << 16) + (ch2 << 8) + (ch1 << 0);
-    }
-
-    protected int getOffset(int value) throws EOFException,
-            FileNotFoundException, IOException {
-        int res = -1;
-        if (value == 0) {
-            res = 0;
-        } else {
-            RandomAccessFile table = new RandomAccessFile("index.bin", "r");
-            table.seek(value * 4 - 4);
-            res = readInt(table);
-            table.close();
-        }
-        return res;
-    }
-
-    protected int extractNumber(String filename) {
-        return Integer.parseInt(filename.substring(filename.indexOf(".") - 4,
-                filename.indexOf(".")));
-    }
+    
+    final long seed_a = 0x7F8D;
+    final long seed_b = 0x2345;
+    final long mod_a = 0xFFF1;
+    final long mod_b = 0xFFD9;
+    
 }

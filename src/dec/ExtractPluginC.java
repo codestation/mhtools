@@ -1,5 +1,5 @@
-/*  MHP2GDEC v1.0 - MHP2G 537x.bin language table extractor
- Copyright (C) 2008 Codestation
+/*  MHTrans - MHP2G 537x.bin language table extractor
+ Copyright (C) 2008-2011 Codestation
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by

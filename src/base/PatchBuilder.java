@@ -1,3 +1,20 @@
+/*  MHTrans - MH Utilities
+    Copyright (C) 2011 Codestation
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package base;
 
 import java.io.BufferedReader;
@@ -15,9 +32,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Vector;
 
-import crypt.DecryptTable;
-
-public class PatchBuilder extends DecryptTable {
+public class PatchBuilder{// extends DecryptTable {
     public void create(String[] args) {
         List<String> list = new ArrayList<String>(Arrays.asList(args));
         list.remove(0);
@@ -34,13 +49,13 @@ public class PatchBuilder extends DecryptTable {
             out.setLength(table_size);
             out.seek(0);
             long current = 0;
-            writeInt(out, list.size());
+            MHUtils.writeInt(out, list.size());
             for (String file : list) {
-                int offset = getOffset(extractNumber(file)) << 11;
-                writeInt(out, offset);
+                int offset = MHUtils.getOffset(MHUtils.extractNumber(file)) << 11;
+                MHUtils.writeInt(out, offset);
                 InputStream in = new FileInputStream(file);
                 int len = (int)new File(file).length();
-                writeInt(out, (int)len);
+                MHUtils.writeInt(out, (int)len);
                 System.out.println(file + ", offset: " + offset  + ", size: " + len);
                 current = out.getFilePointer();
                 byte buffer[] = new byte[1024];
@@ -50,7 +65,7 @@ public class PatchBuilder extends DecryptTable {
                 in.close();
                 out.seek(current);                
             }
-            writeInt(out, 0);
+            MHUtils.writeInt(out, 0);
             install_tables(out, list);
             out.close();
         }catch(FileNotFoundException e) {
@@ -83,21 +98,21 @@ public class PatchBuilder extends DecryptTable {
             }
             Vector<String> install_uniq = new Vector<String>(new LinkedHashSet<String>(install_files));
             while(install_uniq.remove("NONE"));
-            writeInt(out, install_uniq.size());
+            MHUtils.writeInt(out, install_uniq.size());
             int install_count = 0;
             String match = install_files.firstElement();
             out.write(match.getBytes());
-            writeInt(out, install_count);
+            MHUtils.writeInt(out, install_count);
             for(String file : install_files) {
                 if(!file.equals("NONE") && !match.equals(file)) {
                     out.write(file.getBytes());
                     match = file;
-                    writeInt(out, install_count);
+                    MHUtils.writeInt(out, install_count);
                 }
                 install_count++;
             }
             for(String trans_file : list) {
-                int index = patch_files.indexOf(extractNumber(trans_file));
+                int index = patch_files.indexOf(MHUtils.extractNumber(trans_file));
                 int offset = -1;
                 if(index != -1) {
                     // UGH!!, 11 years and the Integer.parseInt bug isn't fixed
@@ -107,7 +122,7 @@ public class PatchBuilder extends DecryptTable {
                 } else {
                     System.out.println("Install info not found for " + trans_file);
                 }
-                writeInt(out, offset);
+                MHUtils.writeInt(out, offset);
             }            
             long filelength = out.length();
             if(filelength % 16 > 0) {
@@ -120,25 +135,5 @@ public class PatchBuilder extends DecryptTable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-    
-    /**
-     * The "writeInt" function of java writes in BigEndian mode but we need
-     * LittleEndian so i made a custom function for that
-     * 
-     * @param file
-     * @throws IOException
-     *             if any error occur while writing
-     */
-    private void writeInt(RandomAccessFile file, int value)
-            throws IOException {
-        int ch1 = (byte) (value >>> 24);
-        int ch2 = (byte) (value >>> 16);
-        int ch3 = (byte) (value >>> 8);
-        int ch4 = (byte) value;
-        file.write(ch4);
-        file.write(ch3);
-        file.write(ch2);
-        file.write(ch1);
     }
 }

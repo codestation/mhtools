@@ -1,4 +1,4 @@
-/*  MHTRANS v1.0
+/*  MHTrans - MH Utilities
     Copyright (C) 2011 Codestation
 
     This program is free software: you can redistribute it and/or modify
@@ -18,14 +18,15 @@
 package base;
 
 import java.io.EOFException;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 
-public abstract class EndianFixer {
+public abstract class MHUtils {
  
-    protected int readInt(InputStream file) throws IOException, EOFException {
+    public static int readInt(InputStream file) throws IOException, EOFException {
         int ch1 = file.read();
         int ch2 = file.read();
         int ch3 = file.read();
@@ -36,7 +37,7 @@ public abstract class EndianFixer {
         return (ch4 << 24) + (ch3 << 16) + (ch2 << 8) + (ch1 << 0);
     }
     
-    protected int readInt(RandomAccessFile file) throws IOException, EOFException {
+    public static int readInt(RandomAccessFile file) throws IOException, EOFException {
         int ch1 = file.read();
         int ch2 = file.read();
         int ch3 = file.read();
@@ -47,7 +48,7 @@ public abstract class EndianFixer {
         return (ch4 << 24) + (ch3 << 16) + (ch2 << 8) + (ch1 << 0);
     }
     
-    protected int readShort(InputStream file) throws IOException, EOFException {
+    public static int readShort(InputStream file) throws IOException, EOFException {
         int ch1 = file.read();
         int ch2 = file.read();
         if ((ch1 | ch2) < 0) {
@@ -56,7 +57,7 @@ public abstract class EndianFixer {
         return (ch2 << 8) + (ch1 << 0);
     }
     
-    protected void writeShort(OutputStream file, int value) throws IOException {
+    public static void writeShort(OutputStream file, int value) throws IOException {
         int ch1 = (byte) (value >>> 8);
         int ch2 = (byte) value;
         file.write(ch2);
@@ -71,7 +72,7 @@ public abstract class EndianFixer {
      * @throws IOException
      *             if any error occur while writing
      */
-    protected void writeInt(OutputStream file, int value) throws IOException {
+    public static void writeInt(OutputStream file, int value) throws IOException {
         int ch1 = (byte) (value >>> 24);
         int ch2 = (byte) (value >>> 16);
         int ch3 = (byte) (value >>> 8);
@@ -82,7 +83,7 @@ public abstract class EndianFixer {
         file.write(ch1);
     }
     
-    protected void writeInt(RandomAccessFile file, int value) throws IOException {
+    public static void writeInt(RandomAccessFile file, int value) throws IOException {
         int ch1 = (byte) (value >>> 24);
         int ch2 = (byte) (value >>> 16);
         int ch3 = (byte) (value >>> 8);
@@ -91,5 +92,25 @@ public abstract class EndianFixer {
         file.write(ch3);
         file.write(ch2);
         file.write(ch1);
+    }
+    
+    public static int extractNumber(String filename) {
+        return Integer.parseInt(filename.substring(filename.indexOf(".") - 4,
+                filename.indexOf(".")));
+    }
+    
+
+    public static int getOffset(int value) throws EOFException,
+            FileNotFoundException, IOException {
+        int res = -1;
+        if (value == 0) {
+            res = 0;
+        } else {
+            RandomAccessFile table = new RandomAccessFile("index.bin", "r");
+            table.seek(value * 4 - 4);
+            res = readInt(table);
+            table.close();
+        }
+        return res;
     }
 }

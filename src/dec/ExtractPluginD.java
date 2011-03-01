@@ -1,4 +1,4 @@
-/*  MHP2GDEC v1.0 - MH TMH image extractor
+/*  MHTrans - MH TMH image extractor
     Copyright (C) 2011 Codestation
 
     This program is free software: you can redistribute it and/or modify
@@ -30,14 +30,14 @@ import javax.imageio.ImageIO;
 
 
 import base.Decoder;
-import base.EndianFixer;
+import base.MHUtils;
 
 /**
  * ExtractPluginD v1.0
  * 
  * @author Codestation
  */
-public class ExtractPluginD extends EndianFixer implements Decoder {
+public class ExtractPluginD extends MHUtils implements Decoder {
     
     @Override
     public void extract(String filename) {

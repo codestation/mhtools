@@ -1,4 +1,4 @@
-/*  MHTRANS v1.0
+/*  MHTrans - MH Utilities
     Copyright (C) 2011 Codestation
 
     This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-public abstract class HelperDec extends EndianFixer {
+public abstract class HelperDec extends MHUtils {
     /**
      * The "readUTF8" function of java expects a different format of the
      * string so i have to make a custom one

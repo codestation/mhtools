@@ -1,18 +1,18 @@
-/*  MHP2GENC v1.0 - PAK rebuilder
- Copyright (C) 2008-2010 codestation
+/*  MHTrans - PAK rebuilder
+    Copyright (C) 2011 Codestation
 
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package enc;
@@ -28,14 +28,14 @@ import java.util.Comparator;
 import java.util.Vector;
 
 import base.Encoder;
-import base.EndianFixer;
+import base.MHUtils;
 
 /**
  * RebuildPluginE v1.0
  * 
  * @author Codestation
  */
-public class RebuildPluginE extends EndianFixer implements Encoder {
+public class RebuildPluginE extends MHUtils implements Encoder {
     
     @Override
     public void compile(String filepath) {

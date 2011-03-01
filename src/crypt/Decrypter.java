@@ -1,5 +1,5 @@
-/*  MHP2GDEC v1.0 - MH data.bin/xxxx.bin decrypter
-    Copyright (C) 2008 Codestation
+/*  MHTrans - MH data.bin/xxxx.bin decrypter
+    Copyright (C) 2008-2011 Codestation
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,7 +23,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-public class Decrypter extends DecryptTable {
+import keys.DataKeys;
+
+import base.MHUtils;
+
+public class Decrypter extends DecryptUtils implements DataKeys {
+    
     private byte png[] = {(byte) 0x89, 0x50, 0x4e, 0x47};
     private byte gif[] = {0x47, 0x49, 0x46, 0x38};
     private byte tmh[] = {0x2e, 0x54, 0x4d, 0x48};
@@ -32,6 +37,31 @@ public class Decrypter extends DecryptTable {
     private byte head[] = {0x48, 0x65, 0x61, 0x64};
     private byte dbst[] = {0x64, 0x62, 0x73, 0x54};
     private byte wav[] = {0x52, 0x49, 0x46, 0x46};
+    
+    @Override
+    protected byte[] getDecryptTable() {
+        return decrypter_table;
+    }
+    
+    @Override
+    protected long getSeedKeyA() {
+        return 0x7F8D;
+    }
+
+    @Override
+    protected long getSeedKeyB() {
+        return 0x2345;
+    }
+
+    @Override
+    protected long getModA() {
+        return 0xFFF1;
+    }
+
+    @Override
+    protected long getModB() {
+        return 0xFFD9;
+    }
 
     public void decrypt_index(String in, ByteArrayOutputStream index_buffer) {
         try {
@@ -46,10 +76,7 @@ public class Decrypter extends DecryptTable {
             int i = 0;
             while (!table_end) {
                 filein.read(buffer);
-                buffer[0] = decrypt_table[buffer[0] & 0xFF];
-                buffer[1] = decrypt_table[buffer[1] & 0xFF];
-                buffer[2] = decrypt_table[buffer[2] & 0xFF];
-                buffer[3] = decrypt_table[buffer[3] & 0xFF];
+                get_table_value(decrypt_table, buffer);
                 long beta = getBeta();
                 long alpha = get_table_value(buffer, 0);
                 long gamma = alpha ^ beta;
@@ -172,10 +199,7 @@ public class Decrypter extends DecryptTable {
                 int read = filein.read(buffer);
                 size -= read;
                 for (int i = 0; i < read; i += 4) {
-                    buffer[i] = decrypt_table[buffer[i] & 0xFF];
-                    buffer[i + 1] = decrypt_table[buffer[i + 1] & 0xFF];
-                    buffer[i + 2] = decrypt_table[buffer[i + 2] & 0xFF];
-                    buffer[i + 3] = decrypt_table[buffer[i + 3] & 0xFF];
+                    set_table_data(buffer, i);
                     long alpha = get_table_value(buffer, i);
                     long beta = getBeta();
                     long gamma = alpha ^ beta;
@@ -209,7 +233,7 @@ public class Decrypter extends DecryptTable {
         try {
             filein = new RandomAccessFile(in, "r");
             System.out.print("Decrypting " + out + " ... ");
-            decrypt_internal(filein, getOffset(extractNumber(in)),
+            decrypt_internal(filein, MHUtils.getOffset(MHUtils.extractNumber(in)),
                     filein.length(), out, true);
 
         } catch (FileNotFoundException e) {
