@@ -32,7 +32,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Vector;
 
-public class PatchBuilder{// extends DecryptTable {
+public class PatchBuilder {
     public void create(String[] args) {
         List<String> list = new ArrayList<String>(Arrays.asList(args));
         list.remove(0);

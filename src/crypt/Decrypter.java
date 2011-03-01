@@ -45,22 +45,22 @@ public class Decrypter extends DecryptUtils implements DataKeys {
     
     @Override
     protected long getSeedKeyA() {
-        return 0x7F8D;
+        return seed_a;
     }
 
     @Override
     protected long getSeedKeyB() {
-        return 0x2345;
+        return seed_b;
     }
 
     @Override
     protected long getModA() {
-        return 0xFFF1;
+        return mod_a;
     }
 
     @Override
     protected long getModB() {
-        return 0xFFD9;
+        return mod_b;
     }
 
     public void decrypt_index(String in, ByteArrayOutputStream index_buffer) {
