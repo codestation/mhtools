@@ -199,7 +199,7 @@ public class Decrypter extends DecryptUtils implements DataKeys {
                 int read = filein.read(buffer);
                 size -= read;
                 for (int i = 0; i < read; i += 4) {
-                    set_table_data(buffer, i);
+                    set_table_data(buffer, decrypt_table, i);
                     long alpha = get_table_value(buffer, i);
                     long beta = getBeta();
                     long gamma = alpha ^ beta;

@@ -73,19 +73,20 @@ public class SavedataCypher extends DecryptUtils implements SavedataKeys {
     private void decrypt_buffer(byte buffer[]) {
         int len = buffer.length - 4;
         byte seed[] = new byte[4];
-        System.arraycopy(buffer, len, seed, 0, 4);        
+        System.arraycopy(buffer, len, seed, 0, 4);    
         get_table_value(decrypt_table, seed);
-        get_table_value(decrypt_table, seed);          
+        get_table_value(decrypt_table, seed);
         long alpha = get_table_value(seed, 0);
         initSeed(alpha);
         for (int i = 0; i < len; i += 4) {
-            set_table_data(buffer, i);
+            set_table_data(buffer, decrypt_table, i);
             alpha = get_table_value(buffer, i);
             long beta = getBeta();
             long gamma = alpha ^ beta;
             set_table_value(buffer, i, gamma);
-            set_table_data(buffer, i);
+            set_table_data(buffer, decrypt_table, i);
         }
+        System.arraycopy(seed, 0, buffer, len, 4);
     }
     
     public void encrypt(String file) {
@@ -130,15 +131,19 @@ public class SavedataCypher extends DecryptUtils implements SavedataKeys {
         }        
         int len = buffer.length - 4;
         byte seed[] = new byte[4];
-        System.arraycopy(buffer, len, seed, 0, 4);         
+        System.arraycopy(buffer, len, seed, 0, 4);
         long alpha = get_table_value(seed, 0);
         initSeed(alpha);
-        for (int i = 0; i < len; i += 4) {            
+        for (int i = 0; i < len; i += 4) {
+        	set_table_data(buffer, encrypt_table, i);
             long gamma = get_table_value(buffer, i);
             long beta = getBeta();
             alpha = beta ^ gamma;
             set_table_value(buffer, i, alpha);
-            get_table_value(encrypt_table, buffer);
+            set_table_data(buffer, encrypt_table, i);
         }
+        get_table_value(encrypt_table, seed);
+        get_table_value(encrypt_table, seed);
+        System.arraycopy(seed, 0, buffer, len, 4);
     }
 }

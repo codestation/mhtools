@@ -81,10 +81,10 @@ public abstract class DecryptUtils {
         buffer[3] = table[buffer[3] & 0xFF];
     }
     
-    protected void set_table_data(byte table[], int i) {
-        table[i] = decrypt_table[table[i] & 0xFF];
-        table[i + 1] = decrypt_table[table[i + 1] & 0xFF];
-        table[i + 2] = decrypt_table[table[i + 2] & 0xFF];
-        table[i + 3] = decrypt_table[table[i + 3] & 0xFF];
+    protected void set_table_data(byte table[], byte base_table[], int i) {
+        table[i] = base_table[table[i] & 0xFF];
+        table[i + 1] = base_table[table[i + 1] & 0xFF];
+        table[i + 2] = base_table[table[i + 2] & 0xFF];
+        table[i + 3] = base_table[table[i + 3] & 0xFF];
     }
 }

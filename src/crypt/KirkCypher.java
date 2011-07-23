@@ -66,6 +66,7 @@ public class KirkCypher implements GameKeys {
             fd.read(byte_bt);
             fd.seek(0);
             System.out.println("Encrypting savedata (KIRK engine): " + byte_bt.length + " bytes");
+            System.out.println("Gamekey: " + getHex(gamekey));
             byte out[] = new CryptoEngine().EncryptSavedata(byte_bt, byte_bt.length, gamekey, 0);
             fd.write(out);
 			fd.setLength(out.length);
