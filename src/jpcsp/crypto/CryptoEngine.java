@@ -1943,9 +1943,9 @@ public class CryptoEngine {
         buf[15] = (byte) seed;
 
         // Set the the data size to size.
-        buf[16] = 0;
-        buf[17] = 0;
-        buf[18] = 0;
+        buf[16] = (byte) (size >> 24);
+        buf[17] = (byte) (size >> 16);
+        buf[18] = (byte) (size >> 8);
         buf[19] = (byte) (size);
 
         ByteBuffer bBuf = ByteBuffer.wrap(buf);
