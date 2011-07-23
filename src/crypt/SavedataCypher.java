@@ -110,15 +110,17 @@ public class SavedataCypher extends DecryptUtils implements SavedataKeys {
     }
     
     private void update_sha1(byte buf[]) {
-        int len = buf.length - 24;
-        len += savedata_sha1_key.length();
+    	byte replace[] = new byte[20];
+    	System.arraycopy(buf, buf.length - 36, replace, 0, 20);
+    	System.arraycopy(savedata_sha1_key.getBytes(), 0, buf, buf.length - 36, 20);
+        int len = buf.length - 16;
         byte buffer[] = new byte[len];
-        System.arraycopy(buf, 0, buffer, 0, len-savedata_sha1_key.length());
-        System.arraycopy(savedata_sha1_key.getBytes(), 0, buffer, len-savedata_sha1_key.length(), savedata_sha1_key.length());
+        System.arraycopy(buf, 0, buffer, 0, len);
         try {
             MessageDigest md = MessageDigest.getInstance("sha-1");
             byte digest[] = md.digest(buffer);
-            System.arraycopy(digest, 0, buf, buf.length - 24, 0x10);
+            System.arraycopy(replace, 0, buf, buf.length - 36, 20);
+            System.arraycopy(digest, 0, buf, buf.length - 24, digest.length);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
