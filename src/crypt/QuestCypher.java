@@ -28,12 +28,16 @@ import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 import keys.QuestKeys;
 
 public class QuestCypher implements QuestKeys {
     
     private short key_var_table[] = {0, 0, 0, 0};
+    
+    private final int QUEST_SIZE = 24592;
+    private final int QUEST_LAST = 2496;
     
     public boolean decrypt(String filein) {
         try {
@@ -48,11 +52,11 @@ public class QuestCypher implements QuestKeys {
             short short_bt[] = new short[byte_bt.length/2];
             sb.get(short_bt);
             System.out.println("Decrypting quest file");
-            decrypt_quest(short_bt);
+            int len = decrypt_quest(short_bt);
             sb.rewind();
             sb.put(short_bt);
             FileOutputStream out = new FileOutputStream(filein + ".dec");
-            out.write(byte_bt);
+            out.write(byte_bt, 0, len);
             out.close();
             System.out.println("finished.");
         } catch (FileNotFoundException e) {
@@ -92,14 +96,67 @@ public class QuestCypher implements QuestKeys {
         }
         return true;
     }
+    
+    public boolean extract(String filein) {
+        try {
+            File fd = new File(filein);
+            if(fd.length() != QUEST_SIZE * 100 + QUEST_LAST) {
+            	System.err.println("Invalid file size");
+            	return false;
+            }
+            
+            String filename = new File(filein).getName();
+            String directory = filename.split("\\.")[0];
+            new File(directory).mkdir();
+            
+            FileInputStream in = new FileInputStream(fd);
+            byte byte_bt[] = new byte[(int)fd.length()];
+            in.read(byte_bt);
+            in.close();
+            for(int i = 0; i < 100; i++) {
+            	ByteBuffer bt = ByteBuffer.wrap(byte_bt,i * QUEST_SIZE, QUEST_SIZE);
+            	bt.order(ByteOrder.LITTLE_ENDIAN);
+                ShortBuffer sb = bt.asShortBuffer();
+                short short_bt[] = new short[QUEST_SIZE/2];
+                sb.get(short_bt);
+                System.out.println("Decrypting quest file # " +  i);
+                int len = decrypt_quest(short_bt);
+                if(len > 0) {
+                	sb.rewind();
+                	sb.put(short_bt);
+                	String outname = String.format("%s/%02d_quest.bin", directory, i);
+                	FileOutputStream out = new FileOutputStream(outname);
+                	out.write(byte_bt, i * QUEST_SIZE, len);
+                    out.close();
+                } else {
+                	System.out.println("The quest # " + i + " is empty");
+                }
+            }
+            System.out.println("Writting enddata.bin");
+            String outname = String.format("%s/enddata.bin", directory);
+        	FileOutputStream out = new FileOutputStream(outname);
+        	out.write(byte_bt, 100 * QUEST_SIZE, QUEST_LAST);
+            out.close();
+        } catch (Exception e) {
+        	e.printStackTrace();
+		}
+    	return true;
+    }
       
-    private void decrypt_quest(short pData[]) {   
-        calc_key(key_var_table, pData);        
+    private int decrypt_quest(short pData[]) {
+    	// check if is a empty quest
+    	short check[] = new short[8];
+    	System.arraycopy(pData, 0, check, 0, 8);
+    	if(Arrays.equals(check, new short[8])) {
+    		return 0;
+    	}
+        calc_key(key_var_table, pData);
         for(int i = 8; i < pData.length*2; i += 2) {
             int index = (i >> 1);
             int key = get_xor_key(key_var_table, index & 0x03);
             pData[index] ^= (short)(key & 0xFFFF);
-        }        
+        }
+        return (int)pData[4] + (int)(pData[5] << 16) + 0x20;
     }
     
     private void encrypt_quest(short pData[]) {

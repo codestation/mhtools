@@ -41,10 +41,20 @@ import base.HelperEnc;
  */
 public class RebuildPluginB extends HelperEnc implements Encoder {
 
-    private int encoder = 0;
+    private int skip_bytes;
+    private int seek_skip;
 
     public RebuildPluginB(int type) {
-        encoder = type;
+    	seek_skip = 0;
+    	switch(type) {
+    	case 7:
+    		seek_skip = 32;
+    	case 4:
+    		skip_bytes = 4;
+    		break;
+    	default:
+    		skip_bytes = 0;
+    	}
     }
 
     @Override
@@ -65,17 +75,21 @@ public class RebuildPluginB extends HelperEnc implements Encoder {
             copyfile(filepath + "/" + filename, filename + ".out");
             RandomAccessFile out = new RandomAccessFile(filename + ".out", "rw");
             Vector<Integer> table_offset = new Vector<Integer>();
-            int pointer;
-            while (true) {
-                pointer = readInt(out);
-                if (pointer == 0) {
-                    break;
-                }
-                table_offset.add(pointer);
+            if(seek_skip != 0) {
+            	out.skipBytes(seek_skip);
+            	table_offset.add(readInt(out));
+            } else {
+	            int pointer;
+	            while (true) {
+	                pointer = readInt(out);
+	                if (pointer == 0) {
+	                    break;
+	                }
+	                table_offset.add(pointer);
+	            }
             }
             for (int i = 0; i < table_offset.size(); i++) {
-                patchStringTable(filepath, filenames.get(i), out,
-                        table_offset.get(i));
+                patchStringTable(filepath, filenames.get(i), out, table_offset.get(i));
             }
             out.close();
             System.out.println("Finished!");
@@ -108,22 +122,27 @@ public class RebuildPluginB extends HelperEnc implements Encoder {
         } catch (EOFException e) {
         }
         file.close();
-        out.seek(starting_offset);
-        out.skipBytes(20 + encoder);
+        out.seek(starting_offset + seek_skip);
+        out.skipBytes(20 + skip_bytes);
         int offset_table_pointer = readInt(out);
-        int string_start = (int) out.getFilePointer() + 28;
-        out.seek(offset_table_pointer);
+
+        out.seek(offset_table_pointer + seek_skip);
         int string_table_pointers = readInt(out);
-        int diff = string_table_pointers - string_start
-                - calculateTotalSize(stringTable);
+        
+        out.seek(string_table_pointers + seek_skip);
+        int string_start = readInt(out);
+        
+        int total = calculateTotalSize(stringTable, 4);
+        int diff = string_table_pointers - string_start - total;
+        
         if (diff < 0) {
             System.err.println(in + " is too big, please remove at least "
                     + -diff + " bytes. Skipped");
             return;
         }
-        out.seek(string_table_pointers);
+        out.seek(string_table_pointers + seek_skip);
         int starting_string = readInt(out);
-        out.seek(starting_string);
+        out.seek(starting_string + seek_skip);
         long orig_table_pointer = string_table_pointers;
         for (String str : stringTable) {
             out.write(str.getBytes("UTF-8"));
@@ -133,20 +152,20 @@ public class RebuildPluginB extends HelperEnc implements Encoder {
                 out.writeByte(0);
             }
             int tmp = (int) out.getFilePointer();
-            out.seek(string_table_pointers);
+            out.seek(string_table_pointers + seek_skip);
             writeInt(out, starting_string);
             string_table_pointers += 4;
-            starting_string = tmp;
+            starting_string = tmp - seek_skip;
             out.seek(tmp);
         }
-        long current_offset = out.getFilePointer();
+        long current_offset = out.getFilePointer() + seek_skip;
         while (current_offset < orig_table_pointer) {
             out.writeByte(0);
             current_offset++;
         }
     }
 
-    private int calculateTotalSize(Vector<String> st)
+    private int calculateTotalSize(Vector<String> st, int align)
             throws UnsupportedEncodingException {
         int total = 0;
         for (String str : st) {
@@ -157,6 +176,9 @@ public class RebuildPluginB extends HelperEnc implements Encoder {
             } else {
                 total += len + 1;
             }
+            if(align != 0) {
+        	     total += align - (total % 4);
+        	}
         }
         return total;
     }

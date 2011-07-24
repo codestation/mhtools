@@ -53,10 +53,13 @@ public class Mhtrans {
             dec = new ExtractPluginA();
             break;
         case 2:
-            dec = new ExtractPluginB(false);
+            dec = new ExtractPluginB(0);
             break;
         case 4:
-            dec = new ExtractPluginB(true);
+            dec = new ExtractPluginB(1);
+            break;
+        case 7:
+            dec = new ExtractPluginB(2);
             break;
         case 3:
             dec = new ExtractPluginC();
@@ -91,6 +94,7 @@ public class Mhtrans {
             enc = new RebuildPluginB(0);
             break;
         case 4:
+        case 7:
             enc = new RebuildPluginB(type);
             break;
         case 3:
@@ -128,6 +132,7 @@ public class Mhtrans {
             System.err.println("       java -jar mhtrans.jar --create-patch <xxxx.bin.enc> [ ... <xxxx.bin.enc>] <output_file>");
             System.err.println("       java -jar mhtrans.jar --decrypt-quest <mxxxxx.mib>");
             System.err.println("       java -jar mhtrans.jar --encrypt-quest <mxxxxx.mib>");
+            System.err.println("       java -jar mhtrans.jar --extract-quests <xxxxxx.bin>");
             System.err.println("       java -jar mhtrans.jar --update-sha1 <mxxxxx.mib>");
             System.err.println("       java -jar mhtrans.jar --decrypt-save <xxxxx.bin>");
             System.err.println("       java -jar mhtrans.jar --encrypt-save <xxxxx.bin>");
@@ -188,6 +193,8 @@ public class Mhtrans {
                 new QuestCypher().encrypt(args[1]);
             } else if(args[0].equals("--decrypt-quest")) {
                 new QuestCypher().decrypt(args[1]);
+            } else if(args[0].equals("--extract-quests")) {
+                new QuestCypher().extract(args[1]);
             } else if(args[0].equals("--update-sha1")) {
                 new QuestCypher().update_sha1(args[1]);
             } else if(args[0].equals("--encrypt-save")) {

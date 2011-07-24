@@ -39,9 +39,19 @@ import base.HelperDec;
 public class ExtractPluginB extends HelperDec implements Decoder {
 
     private int mhp3_skip_bytes;
+    private int mhp3_seek_skip;
 
-    public ExtractPluginB(boolean newdec) {
-        mhp3_skip_bytes = newdec ? 4 : 0;
+    public ExtractPluginB(int newdec) {
+    	mhp3_seek_skip = 0;
+    	switch(newdec) {
+    	case 2:
+    		mhp3_seek_skip = 32;
+    	case 1:
+    		mhp3_skip_bytes = 4;
+    		break;
+    	default:
+    		mhp3_skip_bytes = 0;
+    	}
     }
 
     @Override
@@ -51,13 +61,18 @@ public class ExtractPluginB extends HelperDec implements Decoder {
         try {
             RandomAccessFile file = new RandomAccessFile(filename,"r");
             table_offset = new Vector<Integer>();
-            int pointer;
-            while (true) {
-                pointer = readInt(file);
-                if (pointer == 0) {
-                    break;
-                }
-                table_offset.add(pointer);
+            if(mhp3_seek_skip != 0) {
+            	file.skipBytes(mhp3_seek_skip);
+            	table_offset.add(readInt(file));
+            } else {
+	            int pointer;
+	            while (true) {
+	                pointer = readInt(file);
+	                if (pointer == 0) {
+	                    break;
+	                }
+	                table_offset.add(pointer);
+	            }
             }
             filename = new File(filename).getName();
             String directory = filename.split("\\.")[0];
@@ -66,7 +81,7 @@ public class ExtractPluginB extends HelperDec implements Decoder {
                     new File(directory + "/filelist.txt")), true, "UTF-8");
             filelist.println(filename + " " + file.length());
             for (int j = 0; j < table_offset.size(); j++) {
-                file.seek(table_offset.get(j));
+                file.seek(table_offset.get(j) + mhp3_seek_skip);
                 System.out.println("Creating " + directory + "/string_table_"
                         + j + ".txt");
                 PrintStream stringout = new PrintStream(new FileOutputStream(
@@ -87,12 +102,12 @@ public class ExtractPluginB extends HelperDec implements Decoder {
                 // int unknown5 = readInt(file);
                 // int unknown6 = readInt(file);
                 // int unknown7 = readInt(file);
-                file.seek(offset_table_pointer);
+                file.seek(offset_table_pointer + mhp3_seek_skip);
                 int string_table_pointers = readInt(file);
                 for (long i = string_table_pointers; i < offset_table_pointer; i += 4) {
-                    file.seek(i);
+                    file.seek(i + mhp3_seek_skip);
                     int current_string = readInt(file);
-                    file.seek(current_string);
+                    file.seek(current_string + mhp3_seek_skip);
                     String str = readString(file);
                     if (str.length() == 1 && str.charAt(0) == 0) {
                         // some offsets points to empty strings, so i put this
@@ -107,20 +122,22 @@ public class ExtractPluginB extends HelperDec implements Decoder {
                     }
                 }
                 stringout.close();
-                file.seek(offset_table_pointer + 7 * 4);
+                file.seek((offset_table_pointer + 7 * 4) + mhp3_seek_skip);
             }
-            // calculate the size of the ending unknown data and
-            // make a file of it
-            int size = (int) (file.length() - file.getFilePointer());
-            unknownData = new byte[size];
-            file.read(unknownData, 0, size);
-            System.out.println("Creating " + directory + "/enddata.bin");
-            RandomAccessFile end = new RandomAccessFile(directory
-                    + "/enddata.bin", "rw");
-            filelist.println("enddata.bin");
-            end.write(unknownData, 0, size);
-            end.setLength(end.getFilePointer());
-            end.close();
+            if(mhp3_seek_skip == 0) {
+	            // calculate the size of the ending unknown data and
+	            // make a file of it
+	            int size = (int) (file.length() - file.getFilePointer());
+	            unknownData = new byte[size];
+	            file.read(unknownData, 0, size);
+	            System.out.println("Creating " + directory + "/enddata.bin");
+	            RandomAccessFile end = new RandomAccessFile(directory
+	                    + "/enddata.bin", "rw");
+	            filelist.println("enddata.bin");
+	            end.write(unknownData, 0, size);
+	            end.setLength(end.getFilePointer());
+	            end.close();
+            }
             file.close();
             filelist.close();
             System.out.println("Copying " + filename + " to " + directory + "/"
