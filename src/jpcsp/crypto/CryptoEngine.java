@@ -1393,7 +1393,8 @@ public class CryptoEngine {
                     ctx.result[i] = (byte) (ctx.result[i] ^ key[i]);
                 }
                 System.arraycopy(ctx.result, 0, scrambleResultKeyBuf, 0x14, 0x10);
-                ScrambleSD(scrambleResultBuf, 0x10, seed, 0x4, 0x04);
+                //ScrambleSD(scrambleResultBuf, 0x10, seed, 0x4, 0x04);
+                ScrambleSD(scrambleResultKeyBuf, 0x10, seed, 0x4, 0x04);
                 System.arraycopy(scrambleResultKeyBuf, 0, ctx.result, 0, 0x10);
                 System.arraycopy(ctx.result, 0, hash, 0, 0x10);
 
@@ -1403,7 +1404,8 @@ public class CryptoEngine {
                     ctx.result[i] = (byte) (ctx.result[i] ^ key[i]);
                 }
                 System.arraycopy(ctx.result, 0, scrambleResultKeyBuf, 0x14, 0x10);
-                ScrambleSD(scrambleResultBuf, 0x10, seed, 0x4, 0x04);
+                //ScrambleSD(scrambleResultBuf, 0x10, seed, 0x4, 0x04);
+                ScrambleSD(scrambleResultKeyBuf, 0x10, seed, 0x4, 0x04);
                 System.arraycopy(scrambleResultKeyBuf, 0, ctx.result, 0, 0x10);
                 System.arraycopy(ctx.result, 0, hash, 0, 0x10);
 
@@ -2393,7 +2395,7 @@ public class CryptoEngine {
         return retsize;
     }
 
-    public byte[] DecryptSavedata(byte[] inbuf, int size, byte[] key, int mode) {
+    public byte[] DecryptSavedata(byte[] inbuf, int size, byte[] key, int mode, byte hash[]) {
         // Setup the crypto and keygen modes and initialize both context structs.
         int sdEncMode = 0;
         int sdGenMode = 2;
@@ -2423,6 +2425,11 @@ public class CryptoEngine {
         System.arraycopy(dataBuf, 0x10, outbuf, 0, alignedSize - 0x10);
         hleSdRemoveValue(ctx2, outbuf, alignedSize - 0x10);
         hleSdSetMember(ctx1, outbuf, alignedSize - 0x10);
+        
+        if(hash != null) {
+        	byte buf[] = new byte[0x10 + 0x14];
+        	hleSdGetLastIndex(ctx2, hash, buf);
+        }
 
         return outbuf;
     }
@@ -2482,7 +2489,8 @@ public class CryptoEngine {
         hleSdGetLastIndex(ctx2, hash, key);
 
         // Store this hash at 0x20 in the savedataParams' struct.
-        System.arraycopy(savedataParams, 0x20, hash, 0, 0x10);
+        //System.arraycopy(savedataParams, 0x20, hash, 0, 0x10);
+        System.arraycopy(hash, 0, savedataParams, 0x20, 0x10);
         savedataParams[0] |= 0x01;
 
         // If encMode is 4, calculate a new hash with a blank key, but with mode 3.
@@ -2494,7 +2502,8 @@ public class CryptoEngine {
             hleSdGetLastIndex(ctx2, hash, key);
 
             // Store this hash at 0x70 in the savedataParams' struct.
-            System.arraycopy(savedataParams, 0x70, hash, 0, 0x10);
+            //System.arraycopy(savedataParams, 0x70, hash, 0, 0x10);
+            System.arraycopy(hash, 0, savedataParams, 0x70, 0x10);
         }
 
         // Finally, generate a last hash using a blank key and mode 1.
@@ -2503,7 +2512,8 @@ public class CryptoEngine {
         hleSdGetLastIndex(ctx2, hash, key);
 
         // Store this hash at 0x10 in the savedataParams' struct.
-        System.arraycopy(savedataParams, 0x10, hash, 0, 0x10);
+        //System.arraycopy(savedataParams, 0x10, hash, 0, 0x10);
+        System.arraycopy(hash, 0, savedataParams, 0x10, 0x10);
 
         return savedataParams;
     }
