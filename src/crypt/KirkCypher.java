@@ -67,11 +67,17 @@ public class KirkCypher implements GameKeys {
             fd.seek(0);
             System.out.println("Encrypting savedata (KIRK engine): " + byte_bt.length + " bytes");
             System.out.println("Gamekey: " + getHex(gamekey));
-            byte out[] = new CryptoEngine().EncryptSavedata(byte_bt, byte_bt.length, gamekey, 0);
+            CryptoEngine ce = new CryptoEngine();
+            byte out[] = ce.EncryptSavedata(byte_bt, byte_bt.length, gamekey, 0);
             fd.write(out);
 			fd.setLength(out.length);
             fd.close();
             System.out.println("Finished (" + out.length + " bytes)");
+            byte hash[] = ce.UpdateSavedataHashes(out, out.length, 0);
+            RandomAccessFile hashfd = new RandomAccessFile("hash.bin", "rw");
+            hashfd.write(hash);
+            hashfd.close();
+            System.out.println("Hash saved to hash.bin");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
