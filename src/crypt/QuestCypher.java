@@ -30,9 +30,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
+import base.MHUtils;
+
 import keys.QuestKeys;
 
-public class QuestCypher implements QuestKeys {
+public class QuestCypher extends MHUtils implements QuestKeys {
     
     private short key_var_table[] = {0, 0, 0, 0};
     
@@ -114,17 +116,18 @@ public class QuestCypher implements QuestKeys {
             in.read(byte_bt);
             in.close();
             for(int i = 0; i < 100; i++) {
+            	String mib = new String(byte_bt, (i + 1) * QUEST_SIZE - 16, 16);
             	ByteBuffer bt = ByteBuffer.wrap(byte_bt,i * QUEST_SIZE, QUEST_SIZE);
             	bt.order(ByteOrder.LITTLE_ENDIAN);
                 ShortBuffer sb = bt.asShortBuffer();
                 short short_bt[] = new short[QUEST_SIZE/2];
                 sb.get(short_bt);
-                System.out.println("Decrypting quest file # " +  i);
                 int len = decrypt_quest(short_bt);
                 if(len > 0) {
+                    System.out.println("Decrypted quest # " + i + ": " + mib);
                 	sb.rewind();
                 	sb.put(short_bt);
-                	String outname = String.format("%s/%02d_quest.bin", directory, i);
+                	String outname = String.format("%s/%s", directory, mib);
                 	FileOutputStream out = new FileOutputStream(outname);
                 	out.write(byte_bt, i * QUEST_SIZE, len);
                     out.close();

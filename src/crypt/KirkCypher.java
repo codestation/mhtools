@@ -21,23 +21,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+import base.MHUtils;
+
 import jpcsp.crypto.CryptoEngine;
 import keys.GameKeys;
 
-public class KirkCypher implements GameKeys {
-	
-	static final String HEXES = "0123456789ABCDEF";
-
-	private static String getHex(byte[] raw) {
-		if (raw == null) {
-			return null;
-		}
-		final StringBuilder hex = new StringBuilder(2 * raw.length);
-		for (final byte b : raw) {
-			hex.append(HEXES.charAt((b & 0xF0) >> 4)).append(HEXES.charAt((b & 0x0F))).append(' ');
-		}
-		return hex.toString();
-	}
+public class KirkCypher extends MHUtils implements GameKeys {
 	
     public void decrypt(String file) {
         try {
@@ -47,11 +36,13 @@ public class KirkCypher implements GameKeys {
             fd.seek(0);
             System.out.println("Decrypting savedata (KIRK engine): " + byte_bt.length + " bytes");
             System.out.println("Gamekey: " + getHex(gamekey));
-            byte out[] = new CryptoEngine().DecryptSavedata(byte_bt, byte_bt.length, gamekey, 0);
+            byte hash[] = new byte[0x10];
+            byte out[] = new CryptoEngine().DecryptSavedata(byte_bt, byte_bt.length, gamekey, 0, hash);
             fd.write(out);
 			fd.setLength(out.length);
             fd.close();
             System.out.println("Finished (" + out.length + " bytes)");
+            System.out.println("Hash: " + getHex(hash));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

@@ -95,7 +95,7 @@ public class SavedataCypher extends DecryptUtils implements SavedataKeys {
             byte byte_bt[] = new byte[(int)fd.length()];
             fd.read(byte_bt);
             fd.seek(0);
-            System.out.println("Updating sha1 hash");
+            System.out.print("Updating ");
             update_sha1(byte_bt);
             System.out.println("Encrypting savedata");
             encrypt_buffer(byte_bt);
@@ -120,6 +120,7 @@ public class SavedataCypher extends DecryptUtils implements SavedataKeys {
             MessageDigest md = MessageDigest.getInstance("sha-1");
             byte digest[] = md.digest(buffer);
             System.arraycopy(replace, 0, buf, buf.length - 36, 20);
+            System.out.println("SHA-1: " + getHex(digest));
             System.arraycopy(digest, 0, buf, buf.length - 24, digest.length);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
