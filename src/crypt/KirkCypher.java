@@ -36,13 +36,11 @@ public class KirkCypher extends MHUtils implements GameKeys {
             fd.seek(0);
             System.out.println("Decrypting savedata (KIRK engine): " + byte_bt.length + " bytes");
             System.out.println("Gamekey: " + getHex(gamekey));
-            byte hash[] = new byte[0x10];
-            byte out[] = new CryptoEngine().DecryptSavedata(byte_bt, byte_bt.length, gamekey, 0, hash);
+            byte out[] = new CryptoEngine().DecryptSavedata(byte_bt, byte_bt.length, gamekey, 0);
             fd.write(out);
 			fd.setLength(out.length);
             fd.close();
             System.out.println("Finished (" + out.length + " bytes)");
-            System.out.println("Hash: " + getHex(hash));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

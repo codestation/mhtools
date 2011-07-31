@@ -2395,7 +2395,7 @@ public class CryptoEngine {
         return retsize;
     }
 
-    public byte[] DecryptSavedata(byte[] inbuf, int size, byte[] key, int mode, byte hash[]) {
+    public byte[] DecryptSavedata(byte[] inbuf, int size, byte[] key, int mode) {
         // Setup the crypto and keygen modes and initialize both context structs.
         int sdEncMode = 0;
         int sdGenMode = 2;
@@ -2426,11 +2426,6 @@ public class CryptoEngine {
         hleSdRemoveValue(ctx2, outbuf, alignedSize - 0x10);
         hleSdSetMember(ctx1, outbuf, alignedSize - 0x10);
         
-        if(hash != null) {
-        	byte buf[] = new byte[0x10 + 0x14];
-        	hleSdGetLastIndex(ctx2, hash, buf);
-        }
-
         return outbuf;
     }
 
