@@ -1,4 +1,4 @@
-/*  MHTrans - MH Utilities
+/*  MHTools - MH Utilities
     Copyright (C) 2008-2011 Codestation
 
     This program is free software: you can redistribute it and/or modify
@@ -39,7 +39,7 @@ import enc.RebuildPluginC;
 import enc.RebuildPluginD;
 import enc.RebuildPluginE;
 
-public class Mhtrans {
+public class MHTools {
 
     public static void extract(String filename, String decoder) {
         // (00[1-2][0-9]|47[0-9][0-9])\\..* decoder A
@@ -118,26 +118,26 @@ public class Mhtrans {
     }
 
     public static void main(String[] args) {
-        System.out.println("mhtrans v2.0 - MHP2G/MHFU/MHP3 utils");
+        System.out.println("mhtools v2.0 - MHP2G/MHFU/MHP3 utils");
         System.out.println();
         if (args.length < 2) {
-            System.err.println("Usage: java -jar mhtrans.jar --extract <path to xxxx.bin> <decoder number>");
-            System.err.println("       java -jar mhtrans.jar --rebuild <path to project folder> <encoder number>");
-            System.err.println("       java -jar mhtrans.jar --decrypt <path to xxxx.bin>");
-            System.err.println("       java -jar mhtrans.jar --encrypt <path to xxxx.bin>");
-            System.err.println("       java -jar mhtrans.jar --dec-ext <path to xxxx.bin> <decoder number>");
-            System.err.println("       java -jar mhtrans.jar --reb-enc <path to project folder> <encoder number>");
-            System.err.println("       java -jar mhtrans.jar --gen-index <data.bin>");
-            System.err.println("       java -jar mhtrans.jar --dec-all <data.bin> <path to output folder>");
-            System.err.println("       java -jar mhtrans.jar --create-patch <xxxx.bin.enc> [ ... <xxxx.bin.enc>] <output_file>");
-            System.err.println("       java -jar mhtrans.jar --decrypt-quest <mxxxxx.mib>");
-            System.err.println("       java -jar mhtrans.jar --encrypt-quest <mxxxxx.mib>");
-            System.err.println("       java -jar mhtrans.jar --extract-quests <xxxxxx.bin>");
-            System.err.println("       java -jar mhtrans.jar --update-sha1 <mxxxxx.mib>");
-            System.err.println("       java -jar mhtrans.jar --decrypt-save <xxxxx.bin>");
-            System.err.println("       java -jar mhtrans.jar --encrypt-save <xxxxx.bin>");
-            System.err.println("       java -jar mhtrans.jar --decrypt-kirk <xxxxx.bin>");
-            System.err.println("       java -jar mhtrans.jar --encrypt-kirk <xxxxx.bin>");
+            System.err.println("Usage: java -jar mhtools.jar --extract <path to xxxx.bin> <decoder number>");
+            System.err.println("       java -jar mhtools.jar --rebuild <path to project folder> <encoder number>");
+            System.err.println("       java -jar mhtools.jar --decrypt <path to xxxx.bin>");
+            System.err.println("       java -jar mhtools.jar --encrypt <path to xxxx.bin>");
+            System.err.println("       java -jar mhtools.jar --dec-ext <path to xxxx.bin> <decoder number>");
+            System.err.println("       java -jar mhtools.jar --reb-enc <path to project folder> <encoder number>");
+            System.err.println("       java -jar mhtools.jar --gen-index <data.bin>");
+            System.err.println("       java -jar mhtools.jar --dec-all <data.bin> <path to output folder>");
+            System.err.println("       java -jar mhtools.jar --create-patch <xxxx.bin.enc> [ ... <xxxx.bin.enc>] <output_file>");
+            System.err.println("       java -jar mhtools.jar --decrypt-quest <mxxxxx.mib>");
+            System.err.println("       java -jar mhtools.jar --encrypt-quest <mxxxxx.mib>");
+            System.err.println("       java -jar mhtools.jar --extract-quests <xxxxxx.bin>");
+            System.err.println("       java -jar mhtools.jar --update-sha1 <mxxxxx.mib>");
+            System.err.println("       java -jar mhtools.jar --decrypt-save <xxxxx.bin>");
+            System.err.println("       java -jar mhtools.jar --encrypt-save <xxxxx.bin>");
+            System.err.println("       java -jar mhtools.jar --decrypt-kirk <xxxxx.bin>");
+            System.err.println("       java -jar mhtools.jar --encrypt-kirk <xxxxx.bin>");
             System.exit(1);
         } else {
             if (args[0].equals("--extract")) {

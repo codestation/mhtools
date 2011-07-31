@@ -1,4 +1,4 @@
-/*  MHTrans - GIM image creator
+/*  MHTools - GIM image creator
     Copyright (C) 2011 Codestation
 
     This program is free software: you can redistribute it and/or modify

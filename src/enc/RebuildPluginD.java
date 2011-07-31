@@ -1,4 +1,4 @@
-/*  MHTrans - TMH image rebuilder
+/*  MHTools - TMH image rebuilder
     Copyright (C) 2011 Codestation
 
     This program is free software: you can redistribute it and/or modify

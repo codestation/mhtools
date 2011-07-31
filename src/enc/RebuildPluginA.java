@@ -1,4 +1,4 @@
-/*  MHTrans - MHP 0016/475x/0017.bin language table rebuilder
+/*  MHTools - MHP 0016/475x/0017.bin language table rebuilder
     Copyright (C) 2008-2011 Codestation
 
     This program is free software: you can redistribute it and/or modify

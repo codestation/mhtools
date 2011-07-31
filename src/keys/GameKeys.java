@@ -1,4 +1,4 @@
-/*  MHTrans - MHP3 game keys
+/*  MHTools - MHP3 game keys
     Copyright (C) 2011 Codestation
 
     This program is free software: you can redistribute it and/or modify

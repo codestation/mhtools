@@ -1,4 +1,4 @@
-/*  MHTrans - KIRK savedata decrypter/encrypter
+/*  MHTools - KIRK savedata decrypter/encrypter
     Copyright (C) 2011 Codestation
 
     This program is free software: you can redistribute it and/or modify

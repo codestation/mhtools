@@ -1,4 +1,4 @@
-/*  MHTrans - MHP2G 0016/0017/475x.bin language table extractor
+/*  MHTools - MHP2G 0016/0017/475x.bin language table extractor
     Copyright (C) 2008-2011 Codestation
 
     This program is free software: you can redistribute it and/or modify

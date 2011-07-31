@@ -1,4 +1,4 @@
-/*  MHTrans - MHP2G 53xx.bin language table rebuilder
+/*  MHTools - MHP2G 53xx.bin language table rebuilder
     Copyright (C) 2008-2011 Codestation
 
     This program is free software: you can redistribute it and/or modify

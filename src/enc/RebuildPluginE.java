@@ -1,4 +1,4 @@
-/*  MHTrans - PAK rebuilder
+/*  MHTools - PAK rebuilder
     Copyright (C) 2011 Codestation
 
     This program is free software: you can redistribute it and/or modify

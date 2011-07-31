@@ -1,4 +1,4 @@
-/*  MHTrans - MH data.bin/xxxx.bin decrypter
+/*  MHTools - MH data.bin/xxxx.bin decrypter
     Copyright (C) 2008-2011 Codestation
 
     This program is free software: you can redistribute it and/or modify

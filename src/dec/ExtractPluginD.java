@@ -1,4 +1,4 @@
-/*  MHTrans - MH TMH image extractor
+/*  MHTools - MH TMH image extractor
     Copyright (C) 2011 Codestation
 
     This program is free software: you can redistribute it and/or modify

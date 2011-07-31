@@ -1,4 +1,4 @@
-/*  MHTrans - MH savedata decrypter/encrypter
+/*  MHTools - MH savedata decrypter/encrypter
     Copyright (C) 2011 Codestation
 
     This program is free software: you can redistribute it and/or modify

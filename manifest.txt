@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
 Sealed: true
-Main-Class: base.Mhtrans
+Main-Class: base.MHTools
 Class-Path: bcprov-jdk16-146.jar
 

@@ -1,4 +1,4 @@
-/*  MHTrans - MHP3 quest keys
+/*  MHTools - MHP3 quest keys
     Copyright (C) 2011 Codestation
 
     This program is free software: you can redistribute it and/or modify
