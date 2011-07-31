@@ -68,10 +68,9 @@ public class Encrypter extends DecryptUtils implements DataKeys {
             int file_number = MHUtils.extractNumber(in);
             long file_len = filein.length();
             long table_len = (MHUtils.getOffset(file_number + 1) << 11) - (MHUtils.getOffset(file_number) << 11);
+            int filler = (int) (table_len - file_len);
             if(file_len < table_len) {
-                System.out.println(in + " filesize is less than the stored table by " +
-                        (table_len - file_len) + " bytes, fill the file with 0x00 at the end");
-                System.exit(1);
+                System.out.println("Adding " + filler  + " bytes of filler at the end");
             }else if(file_len > table_len) {
                 System.err.println(in + " filesize is greater than the stored table by " + 
                         (file_len - table_len) + " bytes, aborting");
@@ -89,6 +88,10 @@ public class Encrypter extends DecryptUtils implements DataKeys {
                 fileout.write(buffer);
             }
             filein.close();
+            if(filler > 0) {
+            	byte filler_arr[] = new byte[filler];
+            	fileout.write(filler_arr);
+            }
             fileout.close();
             System.out.println("Finished!");
         } catch (FileNotFoundException e) {

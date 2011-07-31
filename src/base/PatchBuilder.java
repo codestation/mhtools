@@ -55,13 +55,19 @@ public class PatchBuilder {
                 MHUtils.writeInt(out, offset);
                 InputStream in = new FileInputStream(file);
                 int len = (int)new File(file).length();
-                MHUtils.writeInt(out, (int)len);
-                System.out.println(file + ", offset: " + offset  + ", size: " + len);
+                int filler = ((MHUtils.getOffset(MHUtils.extractNumber(file)+1) << 11) - offset) - len;
+                MHUtils.writeInt(out, len + filler);
+                System.out.println(file + ", offset: " + offset  + ", size: " + (len + filler));
+                if(filler > 0) {
+                	System.out.println("> Adding " + filler  + " bytes of filler");
+                }
                 current = out.getFilePointer();
                 byte buffer[] = new byte[1024];
                 out.seek(out.length());
                 while((len = in.read(buffer)) > 0)
                     out.write(buffer, 0, len);
+                byte filler_arr[] = new byte[filler];
+                out.write(filler_arr);
                 in.close();
                 out.seek(current);                
             }
