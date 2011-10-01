@@ -191,7 +191,7 @@ public class Gim extends MHUtils {
     	if(palette == 0) {
     	    imagedata = new byte[data_size - HEADER_SIZE];
     	    palette_size = HEADER_SIZE;
-    	    size = HEADER_SIZE;
+    	    size = (HEADER_SIZE * 2) + data_size;
     	}
     	if(fill_palette(rgb, palette) < 0) {
     		System.err.println("error, couldn't fill palette");
@@ -199,7 +199,7 @@ public class Gim extends MHUtils {
     	}
     	palette_count += color_count;
     	palette_size += color_count * color_size;
-    	size += data_size + palette_size;
+    	size += color_count * color_size;
     	return true;
     }
     
