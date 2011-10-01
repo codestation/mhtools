@@ -66,6 +66,45 @@ public class RebuildPluginD extends MHUtils implements Encoder {
                 writeInt(out, 0);
                 for(File file : files) {
                     System.out.println("Processing " + file.getName());
+                    if(file.isDirectory()) {
+                        File subfiles[] = file.listFiles();
+                        Arrays.sort(subfiles, new Comparator<File>() {
+                            @Override
+                            public int compare(File o1, File o2) {
+                                return o1.getName().compareTo(o2.getName());
+                            }
+                        });
+                        if(subfiles.length > 0) {
+                            Gim gim = new Gim();
+                            int counter = 0;
+                            System.out.println("> Processing multi palette image");
+                            for(File subfile : subfiles) {
+                                System.out.println("> Processing " + subfile.getName());
+                                BufferedImage img = ImageIO.read(subfile);
+                                int[] rgbArray = new int[img.getWidth() * img.getHeight()];
+                                img.getRGB(0, 0, img.getWidth(), img.getHeight(), rgbArray, 0, img.getWidth());
+                                int type;
+                                if(file.getName().contains("palette"))
+                                    type = Gim.INDEX_8;
+                                else if(file.getName().contains("pixels"))
+                                    type = Gim.INDEX_4;
+                                else
+                                    type = 0;
+                                int depth;
+                                if(file.getName().contains("RGBA8888"))
+                                    depth = Gim.RGBA8888;
+                                else if(file.getName().contains("RGBA5551"))
+                                    depth = Gim.RGBA5551;
+                                else
+                                    depth = 0;
+                                if(!gim.setRGBarray(img.getWidth(), img.getHeight(), rgbArray, type, depth, counter++)) {
+                                    System.err.println("Create RGB array failed");
+                                }
+                            }                            
+                            gim.write(out);
+                        }
+                        continue;
+                    }
                     Gim gim = new Gim();
                     if(file.getName().endsWith(".gim")) {
                         FileInputStream in = new FileInputStream(file);
@@ -77,9 +116,9 @@ public class RebuildPluginD extends MHUtils implements Encoder {
                         img.getRGB(0, 0, img.getWidth(), img.getHeight(), rgbArray, 0, img.getWidth());
                         int type;
                         if(file.getName().contains("palette"))
-                            type = Gim.GIM_TYPE_PALETTE;
+                            type = Gim.INDEX_8;
                         else if(file.getName().contains("pixels"))
-                            type = Gim.GIM_TYPE_PIXELS;
+                            type = Gim.INDEX_4;
                         else
                             type = 0;
                         int depth;
@@ -89,8 +128,9 @@ public class RebuildPluginD extends MHUtils implements Encoder {
                             depth = Gim.RGBA5551;
                         else
                             depth = 0;
-                        if(!gim.setRGBarray(img.getWidth(), img.getHeight(), rgbArray, type, depth))
+                        if(!gim.setRGBarray(img.getWidth(), img.getHeight(), rgbArray, type, depth, 0)) {
                             System.err.println("Create RGB array failed");
+                        }
                     }
                     gim.write(out);
                 }

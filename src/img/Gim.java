@@ -1,60 +1,64 @@
-/*  MHTools - GIM image creator
-    Copyright (C) 2011 Codestation
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 package img;
 
+import java.awt.image.BufferedImage;
 import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
+import java.util.Vector;
+
+import javax.imageio.ImageIO;
 
 import base.MHUtils;
 
 public class Gim extends MHUtils {
+	
+	public final static int RGBA5650 = 0;
+	public final static int RGBA5551 = 1;
+	public final static int RGBA4444 = 2;
+	public final static int RGBA8888 = 3;
+	public final static int INDEX_4 = 4;
+	public final static int INDEX_8 = 5;
+	public final static int INDEX_16 = 6;
+	public final static int INDEX_32 = 7;
+	public final static int GIM_UNKNOWN = 8;
+	
+	final static int HEADER_SIZE = 16;
+	final static int WIDTH_BLOCK = 16;
+	final static int HEIGHT_BLOCK = 8;
+	
+	int size;
+	int flags[];
+	
+	int data_size;
+	int data_flags;
+	int data_type;
+	int width;
+	int height;
+	byte imagedata[];
+	
+    int palette_size;
+    int palette_flags;
+    int palette_type;
+    int palette_count;
+    Vector<byte[]> palettedata;
+    //byte palettedata[][];
     
-    public static final int RGBA8888 = 3;
-    public static final int RGBA5551 = 1;
-    public static final int GIM_TYPE_PIXELS = 4;
-    public static final int GIM_TYPE_NOPALETTE = 8;
-    public static final int GIM_TYPE_PALETTE = 5;
-    public static final int HEADER_SIZE = 16;
-    public static final int BPP32_BYTE = 4;
-    public static final int BPP16_BYTE = 2;
-    public static final int BPP32 = 32;
-    public static final int BPP16 = 16;
+    int max_colors;
+    int palette_number;
+    //int palettedata_count = 0;
     
-    private int size;
-    private int flags[] = new int[3];
-    private int data_size;
-    private int data_flags;
-    private int data_type;
-    private int width;
-    private int height;
-    private byte imagedata[];
-    private int palette_size;
-    private int palette_flags;
-    private int palette_type;
-    private int palette_count;
-    private byte palettedata[];
-    private int palettedata_count = 0;
-    private boolean loaded = false;
-    
-    public void load(InputStream in) throws EOFException, IOException {
+    public int load(InputStream in) throws EOFException, IOException {
+    	int color_size;
+    	
         size = readInt(in);
+        flags = new int[3];
         flags[0] = readInt(in);
         flags[1] = readInt(in);
         flags[2] = readInt(in);
@@ -65,106 +69,60 @@ public class Gim extends MHUtils {
         height = readShort(in);
         imagedata = new byte[data_size - 16];
         in.read(imagedata);
-        if(data_type != GIM_TYPE_NOPALETTE) {
+        
+        if(data_type != GIM_UNKNOWN) {
             palette_size = readInt(in);
             palette_flags = readInt(in);
             palette_type = readInt(in);
             palette_count = readInt(in);
-            int palette_datasize = palette_count * (palette_type == RGBA8888 ? 4 : 2);
-            palettedata = new byte[palette_datasize];
-            in.read(palettedata);
-        }
-        loaded = true;
-    }
-    
-    public boolean setRGBarray(int width, int height, int rgb[], int data_type, int palette_type) {
-        flags[0] = 0;
-        flags[1] = 1;
-        flags[2] = 1;
-        data_size = HEADER_SIZE;
-        data_flags = 1;
-        this.width = width;
-        this.height = height;
-        palette_size = HEADER_SIZE;
-        this.palette_type = palette_type;
-        palette_flags = 2;
-        this.data_type = data_type;
-        if(data_type == GIM_TYPE_PIXELS) {
-            int palettesize = 16 * (palette_type == RGBA8888 ? 4 : 2);
-            palettedata = new byte[palettesize];
-            data_size += (width / 2) * height;
-            imagedata = new byte[data_size - HEADER_SIZE];
-            palette_count = fill_to_palette(rgb);
-            if(palette_count == -1)
-                return false;
-            palette_count = 16;
-            palette_size += palettesize;
-            size = data_size + palette_size + HEADER_SIZE;            
-        } else if(data_type == GIM_TYPE_PALETTE) {
-            int palettesize = 256 * (palette_type == RGBA8888 ? 4 : 2);
-            palettedata = new byte[palettesize];
-            data_size += width * height;
-            imagedata = new byte[data_size - HEADER_SIZE];
-            palette_count = fill_to_palette(rgb);
-            if(palette_count == -1)
-                return false;
-            palette_count = 256;
-            palette_size += palettesize;
-            size = data_size + palette_size + HEADER_SIZE;
-        } else {
-            loaded = false;
-            return false;
-        }        
-        loaded = true;
-        return true;
-    }
-    
-    public int[]getRGBarray() {
-        if(!loaded)
-            return null;
-        int dsx = width;
-        int dsy = height;
-        int mod = (data_type == GIM_TYPE_PALETTE ? BPP16 : BPP32);
-        int colorsize = palette_type == RGBA8888 ? BPP32_BYTE : BPP16_BYTE;
-        dsx /= mod;
-        dsy /= 8;
-        int counter = 0;
-        int bitmapbuffer[] = new int[width * height]; 
-        boolean flip = false;
-        for (int sy = 0; sy < dsy; sy++) {
-            for (int sx = 0; sx < dsx; sx++) {
-                for (int y = 0; y < 8; y++) {
-                    for (int x = 0; x < mod; x++) {
-                        int pos = (int)(imagedata[counter] & 0xFF);
-                        if(data_type == GIM_TYPE_PIXELS) {
-                            if(flip)
-                                pos = pos >> 4;
-                            else
-                                pos = pos & 0xF;
-                        }
-                        int off = (((sy * 8) + y) * width + ((sx * mod) + x));
-                        int rgb = get_color(pos * colorsize);
-                        bitmapbuffer[off] = rgb;
-                        if(data_type == GIM_TYPE_PIXELS) {
-                            if(flip) {
-                                counter++;
-                                flip = false;
-                            } else {
-                                flip = true;
-                            }
-                        } else {
-                            counter++;
-                        }
-                    }
-                }
+            
+			switch (palette_type) {
+			case RGBA5650:
+			case RGBA5551:
+			case RGBA4444:
+				color_size = 2;
+				break;
+			case RGBA8888:
+				color_size = 4;
+				break;
+			default:
+				System.err.println("error: palette type unknown");
+				return -1;
+			}
+			
+            switch (data_type) {
+            case INDEX_4:
+                max_colors = (int) Math.pow(2, 4);
+                break;
+            case INDEX_8:
+                max_colors = (int) Math.pow(2, 8);
+                break;
+            case INDEX_16:
+                max_colors = (int) Math.pow(2, 16);
+                break;
+            case INDEX_32:
+                max_colors = (int) Math.pow(2, 32);
+                break;
             }
+            
+            palette_number = palette_count / max_colors;
+            
+            palettedata = new Vector<byte[]>();
+            for(int i = 0; i < palette_number; i++) {
+                palettedata.add(new byte[(palette_count * color_size) / palette_number]);
+                in.read(palettedata.elementAt(i));
+            }
+        } else {
+            palette_number = 0;
         }
-        return bitmapbuffer;
+        return palette_number;
     }
     
-    public boolean write(OutputStream out)throws IOException {
-        if(!loaded)
+    public boolean write(OutputStream out)throws IOException {    	
+        if(imagedata == null) {
             return false;
+        }
+        
         writeInt(out, size);
         writeInt(out, flags[0]);
         writeInt(out, flags[1]);
@@ -175,119 +133,329 @@ public class Gim extends MHUtils {
         writeShort(out, width);
         writeShort(out, height);
         out.write(imagedata);
-        if(data_type != GIM_TYPE_NOPALETTE) {
+        
+        if(data_type != GIM_UNKNOWN) {
             writeInt(out, palette_size);
             writeInt(out, palette_flags);
             writeInt(out, palette_type);
             writeInt(out, palette_count);
-            out.write(palettedata);
+            for(byte[] p : palettedata) {
+                out.write(p);
+            }
         }
+        
         return true;
     }
     
-    private int fill_to_palette(int rgb[]) {
-        int mod = (data_type == GIM_TYPE_PALETTE ? BPP16 : BPP32);
-        int dsx = width / mod;
-        int dsy = height / 8;
-        boolean flip = false;
-        int counter = 0;
-        palettedata_count = 0;
-        for (int sy = 0; sy < dsy; sy++) {
-            for (int sx = 0; sx < dsx; sx++) {
-                for (int y = 0; y < 8; y++) {
-                    for (int x = 0; x < mod; x++) {
-                        int off = (((sy * 8) + y) * width + ((sx * mod) + x));
-                        if(data_type == GIM_TYPE_PALETTE && palettedata_count > 256 ||
-                                data_type == GIM_TYPE_PIXELS && palettedata_count > 16) {
-                            return 0;
-                        }
-                        int color = rgb[off];
-                        int index = set_unique_color(color);
-                        if(index == -1)
-                            return -1;
-                        if(data_type == GIM_TYPE_PIXELS) {
-                            if(flip) {
-                                imagedata[counter] |= (byte) (index << 4);
-                                counter++;
-                                flip = false;
+    public boolean setRGBarray(int width, int height, int rgb[], int data_type, int palette_type, int palette) {
+    	int color_size;
+    	int color_count;
+    	
+    	if(palette == 0) {        	
+        	flags = new int[3];
+            flags[0] = 0;
+            flags[1] = 1;
+            flags[2] = 1;
+            data_flags = 1;
+            this.width = width;
+            this.height = height;
+            palette_size = HEADER_SIZE;
+            this.palette_type = palette_type;
+            palette_flags = 2;
+            this.data_type = data_type;
+            palettedata = new Vector<byte[]>();
+            palette_count = 0;
+    	}
+        switch (palette_type) {
+		case RGBA5650:
+		case RGBA5551:
+		case RGBA4444:
+			color_size = 2;
+			break;
+		case RGBA8888:
+			color_size = 4;
+			break;
+		default:
+			System.err.println("error: palette type unknown");
+			return false;
+		}
+        
+        switch(data_type) {
+        case INDEX_4:
+        	color_count = (int)Math.pow(2, 4);
+        	data_size = HEADER_SIZE + (width / 2) * height;
+        	break;
+        case INDEX_8:
+        	color_count = (int)Math.pow(2, 8);
+        	data_size = HEADER_SIZE + width * height;
+        	break;
+        default:
+        	System.err.println("Error, unknown data type");
+        	return false;
+        }
+        palettedata.add(new byte[color_count * color_size]);
+    	if(palette == 0) {
+    	    imagedata = new byte[data_size - HEADER_SIZE];
+    	    palette_size = HEADER_SIZE;
+    	    size = HEADER_SIZE;
+    	}
+    	if(fill_palette(rgb, palette) < 0) {
+    		System.err.println("error, couldn't fill palette");
+    		return false;
+    	}
+    	palette_count += color_count;
+    	palette_size += color_count * color_size;
+    	size += data_size + palette_size;
+    	return true;
+    }
+    
+    public int[]getRGBarray(int palette) {
+        int pos = 0;
+    	int color;
+    	int offset;
+    	int counter;
+    	int modifier;
+    	int bitmapbuffer[];
+    	int palettedata_int[] = null;
+    	short palettedata_short[] = null;
+    	IntBuffer intbuf;
+    	ShortBuffer shortbuf;
+    	
+    	bitmapbuffer = new int[width * height];
+    	ByteBuffer bytearr = ByteBuffer.wrap(palettedata.elementAt(palette));
+    	
+    	switch(data_type) {
+    	case INDEX_4:
+    	    modifier = 2;
+    	    break;
+    	default:
+    	    modifier = 1;
+    	    break;
+    	}
+    	
+        switch(palette_type) {
+        case RGBA5650:
+        case RGBA5551:
+        case RGBA4444:
+            palettedata_short = new short[palettedata.elementAt(palette).length / 2];
+            shortbuf = bytearr.asShortBuffer();
+            shortbuf.get(palettedata_short);
+            break;
+        case RGBA8888:
+            palettedata_int = new int[palettedata.elementAt(palette).length / 4];
+            intbuf = bytearr.asIntBuffer();
+            intbuf.get(palettedata_int);
+            break;
+        default:
+            System.err.println("Error, unknown data type");
+            return null;
+        }
+    	
+        counter = 0;
+        for (int sy = 0; sy < height / HEIGHT_BLOCK; sy++) {
+            for (int sx = 0; sx < width / (WIDTH_BLOCK * modifier); sx++) {
+                for (int y = 0; y < HEIGHT_BLOCK; y++) {
+                    for (int x = 0; x < (WIDTH_BLOCK * modifier); x++) {
+                    	offset = (((sy * HEIGHT_BLOCK) + y) * width + ((sx * (WIDTH_BLOCK * modifier)) + x));
+                        pos = imagedata[counter] & 0xFF;
+                    	switch(data_type) {
+                    	case INDEX_4:
+                            if((x % 2) == 0) {
+                                pos = pos & 0xF;
                             } else {
-                                imagedata[counter] = (byte) (index & 0xF);
-                                flip = true;
+                                pos = pos >> 4;
+                                counter++;
                             }
-                        } else {
-                            imagedata[counter] = (byte) index;
-                            counter++;
+                            break;
+                    	case INDEX_8:
+                    	    counter++;
+                            break;                            
+                    	}
+                    	switch(palette_type) {
+                        case RGBA5650:
+                        case RGBA5551:
+                        case RGBA4444:
+                            if(counter == 15)
+                                counter = 15;
+                            color = color5551to8888(palettedata_short[pos]);
+                            break;
+                    	case RGBA8888:
+                            color = changeEndianess(palettedata_int[pos]);
+                            break;
+                    	default:
+                    	    color = 0;
+                    	}
+                    	bitmapbuffer[offset] = color;
+                    }
+                }
+            }
+        }
+        return bitmapbuffer;
+    }
+    
+    public int fill_palette(int rgb[], int palette) {
+        int pos;
+        int color;
+        int offset;
+        int counter;
+        int modifier;
+        int color_count;
+        int index_offset;
+        int palettedata_int[] = null;
+        short palettedata_short[] = null;
+        
+        switch(data_type) {
+        case INDEX_4:
+            modifier = 2;
+            color_count = (int)Math.pow(2, 4);
+            break;
+        default:
+            color_count = (int)Math.pow(2, 8);
+            modifier = 1;
+            break;
+        }
+
+        switch(palette_type) {
+        case RGBA5650:
+        case RGBA5551:
+        case RGBA4444:
+            palettedata_short = new short[color_count];
+            break;
+        case RGBA8888:
+            palettedata_int = new int[color_count];
+            break;
+        default:
+            System.err.println("Error, unknown data type");
+            return 0;
+        }
+        pos = 0;
+        counter = 0;
+        index_offset = 0;
+        for (int sy = 0; sy < height / HEIGHT_BLOCK; sy++) {
+            for (int sx = 0; sx < width / (WIDTH_BLOCK * modifier); sx++) {
+                for (int y = 0; y < HEIGHT_BLOCK; y++) {
+                    for (int x = 0; x < (WIDTH_BLOCK * modifier); x++) {
+                        offset = (((sy * HEIGHT_BLOCK) + y) * width + ((sx * (WIDTH_BLOCK * modifier)) + x));                                         
+                        color = rgb[offset];
+                        switch(palette_type) {
+                        case RGBA8888:
+                            color = swapColor(color);
+                            if(counter > 0) {
+                                for(pos = 0; pos < counter; pos++) {
+                                    if(palettedata_int[pos] == color) {
+                                        break;
+                                    }
+                                }
+                                if(pos >= counter) {
+                                    pos = -1;
+                                }
+                            } else {
+                                pos = 0;
+                                palettedata_int[counter++] = color;
+                            }
+                            if(pos < 0) {
+                                pos = counter;
+                                palettedata_int[counter++] = color;
+                            }
+                            break;
+                        case RGBA5650:
+                        case RGBA5551:
+                        case RGBA4444:
+                            //FIXME whole loop
+                            short color16 = color8888to5551(color);
+                            if(counter > 0) {
+                                for(pos = 0; pos < counter; pos++) {
+                                    if(palettedata_short[pos] == color16) {
+                                        break;
+                                    }
+                                }
+                                if(pos >= counter) {
+                                    pos = -1;
+                                }
+                            } else {
+                                pos = 0;
+                                palettedata_short[counter++] = color16;
+                            }
+                            if(pos < 0) {
+                                pos = counter;
+                                palettedata_short[counter++] = color16;
+                            }                      
+                            break;
+                        }
+                        
+                        switch(data_type) {
+                        case INDEX_4:
+                            if((x % 2) == 0) {
+                                imagedata[index_offset] |= (byte) (pos & 0xF);
+                            } else {
+                                imagedata[index_offset] |= (byte) (pos << 4);
+                                index_offset++;
+                            }
+                            break;
+                        case INDEX_8:
+                            imagedata[index_offset++] = (byte) (pos & 0xFF);
+                            break;
                         }
                     }
                 }
             }
         }
-        return palettedata_count;
+        ByteBuffer bytebuf = ByteBuffer.wrap(palettedata.elementAt(palette));
+        switch(palette_type) {
+        case RGBA8888:
+            IntBuffer intbuf = bytebuf.asIntBuffer();
+            intbuf.put(palettedata_int);
+            break;
+        case RGBA5650:
+        case RGBA5551:
+        case RGBA4444:
+            ShortBuffer shortbuf = bytebuf.asShortBuffer();
+            shortbuf.put(palettedata_short);
+            break;
+        }
+        return counter;
+    }
+        
+    private int color5551to8888(short color) {
+        color = (short) ((int)((color & 0xFF) << 8) | (color >> 8) & 0xFF);
+        int R = color & 0x1F;
+        int G = (color >> 5) & 0x1F;
+        int B = (color >> 10) & 0x1F;
+        int A = (color >> 15) & 0x1;
+        R = (R << 3) | (R >> 2);
+        G = (G << 3) | (G >> 2);
+        B = (B << 3) | (B >> 2);
+        A = A == 0 ? 0 : 255;
+        return ((A << 24) + (R << 16) + (G << 8) + B);
     }
     
-    private void set_color(int color, int offset) {
+    private short color8888to5551(int color) {
+        short A = (short) ((color >> 24) & 0xFF);
+        short R = (short) ((color >> 16) & 0xFF);
+        short G = (short) ((color >> 8) & 0xFF);
+        short B = (short) (color & 0xFF);
+        A = (short) (A == 0 ? 0 : 1);
+        R = (short) (R >> 3);
+        G = (short) (G >> 3);
+        B = (short) (B >> 3);
+        color = ((A << 15) + (B << 10) + (G << 5) + R);
+        return (short) ((int)((color & 0xFF) << 8) | (color >> 8) & 0xFF);
+    }
+    
+    private int changeEndianess(int color) {
+        int A = color & 0xFF;
+        int R = (color >> 24) & 0xFF;
+        int G = (color >> 16) & 0xFF;
+        int B = (color >> 8) & 0xFF;
+        return ((A << 24) + (R << 16) + (G << 8) + B);
+    }
+    
+    private int swapColor(int color) {
         int A = (color >> 24) & 0xFF;
         int R = (color >> 16) & 0xFF;
         int G = (color >> 8) & 0xFF;
         int B = color & 0xFF;
-        if(palette_type == RGBA8888) {
-            palettedata[offset + 2] = (byte) B;
-            palettedata[offset + 1] = (byte) G;
-            palettedata[offset + 0] = (byte) R;
-            palettedata[offset + 3] = (byte) A;
-        } else {
-            A = A == 0 ? 0 : 1;
-            R = R >> 3;
-            G = G >> 3;
-            B = B >> 3;
-            color = R;
-            color |= G << 5;
-            color |= B << 10;
-            color |= A << 15;
-            palettedata[offset+1] = (byte) (color >> 8 & 0xFF);
-            palettedata[offset+0] = (byte) (color & 0xFF);
-        }
-    }
-    
-    private int set_unique_color(int color) {
-        int i = 0;
-        while(i < palettedata_count) {
-            if(color == get_color(i * (palette_type == RGBA8888 ? 4 : 2))) {
-                return i;
-            }
-            i++;
-        }
-        if(data_type == GIM_TYPE_PALETTE && i >= 256 ||
-                data_type == GIM_TYPE_PIXELS && i >= 16) {
-            System.err.println("Maximum number of color in palette reached (" + i + ")");
-            return -1;
-        }
-        set_color(color, i * (palette_type == RGBA8888 ? 4 : 2));
-        palettedata_count = i + 1;
-        return i;
-    }
-    
-    private int get_color(int offset) {
-        int A, R, G, B;
-        if(palette_type == RGBA8888) {
-            B = (int)palettedata[offset + 2] & 0xFF;
-            G = (int)palettedata[offset + 1] & 0xFF;
-            R = (int)palettedata[offset + 0] & 0xFF;
-            A = (int)palettedata[offset + 3] & 0xFF;
-        } else {
-            int color = (((int)(palettedata[offset+1]) << 8) & 0xFF00);
-            color |=((int)(palettedata[offset]) & 0xFF);
-            R = color & 0x1F;
-            G = (color >> 5) & 0x1F;
-            B = (color >> 10) & 0x1F;
-            A = (color >> 15) & 0x1;
-            R = (R << 3) | (R >> 2);
-            G = (G << 3) | (G >> 2);
-            B = (B << 3) | (B >> 2);
-            A = A == 0 ? 0 : 255;
-        }
-        int res = ((A << 24) + (R << 16) + (G << 8) + B);
-        return res;
+        return ((R << 24) + (G << 16) + (B << 8) + A);
     }
     
     public int getWidth() {
@@ -311,7 +479,7 @@ public class Gim extends MHUtils {
     }
     
     public boolean isSupported() {
-        return (data_type != GIM_TYPE_NOPALETTE) || (data_type == GIM_TYPE_PIXELS && palette_count <=16) ||
-        (data_type == GIM_TYPE_PALETTE && palette_count <= 256);
+        return (data_type != GIM_UNKNOWN) || (data_type == INDEX_4 && palette_count <= 16) ||
+        (data_type == INDEX_8 && palette_count <= 256);
     }
 }

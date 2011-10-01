@@ -62,37 +62,54 @@ public class ExtractPluginD extends MHUtils implements Decoder {
             file.skip(4);
             //file.readInt(); //32 bit padding
             for(int i = 0; i < header_gim_count; i++) {
-                Gim gim = new Gim();
-                gim.load(file);
                 String fileformat;
                 String format;
                 String fileout;
-                if(gim.getDataType() == Gim.GIM_TYPE_PALETTE)
+                String subdir = null;
+                
+                Gim gim = new Gim();
+                int count = gim.load(file);
+
+                if(count > 1) {
+                    System.out.println("Multiple palette detected: " + count);
+                }
+                
+                if(gim.getDataType() == Gim.INDEX_8)
                     format = "palette";
-                else if(gim.getDataType() == Gim.GIM_TYPE_PIXELS)
+                else if(gim.getDataType() == Gim.INDEX_4)
                     format = "pixels";
-                else if(gim.getDataType() == Gim.GIM_TYPE_NOPALETTE)
+                else if(gim.getDataType() == Gim.GIM_UNKNOWN)
                     format = "none";
                 else
                     format = "image";
                 String palette = null;
-                if(gim.getDataType() != Gim.GIM_TYPE_NOPALETTE) {
+                if(gim.getDataType() != Gim.GIM_UNKNOWN) {
                     if(gim.getPaletteType() == Gim.RGBA8888) {
                         palette = "RGBA8888";
                     } else {
                         palette = "RGBA5551";  
                     }
                 }
+
                 if(gim.isSupported()) {
-                    int buffered_type = BufferedImage.TYPE_INT_ARGB;
-                    BufferedImage bi = new BufferedImage(gim.getWidth(), gim.getHeight(), buffered_type);
-                    bi.setRGB(0, 0, gim.getWidth(), gim.getHeight(), gim.getRGBarray(), 0, gim.getWidth());
-                    fileformat = "png";
-                    fileout = String.format(directory + "/%03d", i) + "_" + format + "_" + palette + "." + fileformat;
-                    System.out.println("Extracting " + fileout);
-                    File out = new File(fileout);
-                    out.delete();
-                    ImageIO.write(bi,fileformat, out);
+                    if(count > 1) {
+                        subdir = String.format(directory + "/%03d", i) + "_" + format + "_" + palette;
+                        new File(subdir).mkdir();
+                    }
+                    BufferedImage bi = new BufferedImage(gim.getWidth(), gim.getHeight(), BufferedImage.TYPE_INT_ARGB);
+                    for(int j = 0; j < count; j++) {
+                        bi.setRGB(0, 0, gim.getWidth(), gim.getHeight(), gim.getRGBarray(j), 0, gim.getWidth());
+                        fileformat = "png";
+                        if(count > 1) {
+                            fileout = String.format(subdir + "/%03d", j) + "_image." + fileformat;
+                        } else {
+                            fileout = String.format(directory + "/%03d", i) + "_" + format + "_" + palette + "." + fileformat;
+                        }
+                        System.out.println("Extracting " + fileout);
+                        File out = new File(fileout);
+                        out.delete();
+                        ImageIO.write(bi,fileformat, out);
+                    }
                 } else {
                     fileformat = "gim";
                     if(palette != null)
