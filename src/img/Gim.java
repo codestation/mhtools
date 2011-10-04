@@ -42,11 +42,9 @@ public class Gim extends MHUtils {
     int palette_type;
     int palette_count;
     Vector<byte[]> palettedata;
-    //byte palettedata[][];
     
     int max_colors;
     int palette_number;
-    //int palettedata_count = 0;
     
     public int load(InputStream in) throws EOFException, IOException {
     	int color_size;
@@ -227,7 +225,7 @@ public class Gim extends MHUtils {
     	    break;
     	}
     	
-        switch(palette_type) {
+    	switch(palette_type) {
         case RGBA5650:
         case RGBA5551:
         case RGBA4444:
