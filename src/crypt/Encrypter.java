@@ -72,7 +72,7 @@ public class Encrypter extends DecryptUtils implements DataKeys {
             // encrypter works with 4-byte blocks, thx XanderXAJ for the hint :)
             if(file_len % 4 > 0) {
                 file_len += 4 - (file_len % 4);
-                System.out.println("The file isn't 4-byte aligned, using " + file_len + "as file size");
+                System.out.println("The file isn't 4-byte aligned, using " + file_len + "bytes as file size");
             }
 
             long table_len = (MHUtils.getOffset(file_number + 1) << 11) - (MHUtils.getOffset(file_number) << 11);
