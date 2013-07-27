@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="build" name="mhtools">
+	<property name="src" value="src"/>
+	<property name="build" value="bin"/>
+    <property name="target" value="1.7"/>
+    <property name="source" value="1.7"/>
+    <path id="mhtools.classpath">
+        <pathelement location="bin"/>
+        <pathelement location="bcprov-jdk16-146.jar"/>
+    </path>
+    <target name="init">
+        <mkdir dir="${build}"/>
+        <copy includeemptydirs="false" todir="${build}">
+            <fileset dir="${src}">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="${build}"/>
+    </target>
+    <target depends="compile,jar" name="build"/>
+    <target depends="init" name="compile">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac destdir="${build}" includeantruntime="false" source="${source}" target="${target}">
+            <src path="${src}"/>
+            <classpath refid="mhtools.classpath"/>
+        </javac>
+    </target>
+	<target depends="compile" name="jar" description="Create Jar file">
+	    <jar jarfile="mhtools.jar" basedir="${build}" includes="**/*.class">
+	    	<manifest>
+	    		<attribute name="Class-Path" value="bcprov-jdk16-146.jar"/>
+	    		<attribute name="Main-Class" value="base.MHTools"/>
+	    	</manifest>
+	    </jar>
+	</target>
+</project>
